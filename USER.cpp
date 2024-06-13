@@ -1,5 +1,3 @@
-//tey soon hong
-
 #include <iostream>
 #include <fstream>
 #include <sstream>
