@@ -36,6 +36,116 @@ struct claims
 	
 };
 
+class Person {
+public:
+    string userID;
+    string username;
+    string password;
+
+    Person() {}
+
+    Person(string userID, string username, string password)
+        : userID(userID), username(username), password(password) {}
+
+};
+
+class ADTqueue 
+{
+private:
+    Person queue[50];
+    int head, tail;
+
+public:
+    ADTqueue() {
+        tail = -1;
+        head = 0;
+    }
+
+    int empty() {
+        return head > tail;
+    }
+
+    int full() {
+        return tail == 49;
+    }
+
+    void append(Person p) {
+        if (!full()) {
+            tail++;
+            queue[tail] = p;
+        } else {
+            cout << "Queue is Full" << endl;
+        }
+    }
+
+    Person serve() {
+        Person p;
+        if (!empty()) {
+            p = queue[head];
+            head++;
+            return p;
+        } else {
+            cout << "Queue is Empty" << endl;
+            return p;
+        }
+    }
+
+    void loadFromFile() {
+        ifstream file("user_login.txt");
+        string line;
+        while (getline(file, line)) {
+            stringstream ss(line);
+            string userID, username, password;
+
+            if (getline(ss, userID, '|') && getline(ss, username, '|') && getline(ss, password, '|')) {
+                Person p(userID, username, password);
+                append(p);
+            }
+        }
+        file.close();
+    }
+
+    void saveToFile() {
+        ofstream file("user_login.txt");
+        if (!file.is_open()) {
+            cout << "Error opening file" << endl;
+            return;
+        }
+
+        for (int i = head; i <= tail; ++i) {
+            file << queue[i].userID << "|" << queue[i].username << "|" << queue[i].password << "|" << endl;
+        }
+        file.close();
+    }
+
+    void displayQueue() {
+        for (int i = head; i <= tail; ++i) {
+            cout << "ID: " << queue[i].userID << ", Name: " << queue[i].username << ", Password: " << queue[i].password << endl;
+        }
+    }
+
+    bool login(string lgn, string passwd) {
+    	char ch,ch1;
+		string choice1;
+		string userID;
+        for (int i = head; i <= tail; ++i) {
+            if (queue[i].username == lgn && queue[i].password == passwd) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool registerUser(string username) {
+        // Check if username already exists
+        for (int i = head; i <= tail; ++i) {
+            if (queue[i].username == username) {
+                return false;
+            }
+        }
+        return true;
+    }
+};
 
 class User
 {
@@ -44,7 +154,9 @@ class User
 		string userID, name, ic, gender, contactNumber, email, caddress, paddress, state, city, poscode, username, password, cpassword;
 		char choice;
 		int uID;
+		ADTqueue ADT;
 	public:
+    	
 		User()
 		{
 			uID=1;
@@ -276,6 +388,7 @@ class User
 			string getup;
 			char ch,ch1;
 			string choice1;
+			ADT.loadFromFile();
 					
 			for(int z=0;z<3;z++)
 			{
@@ -309,7 +422,7 @@ class User
 			        	getline(iss, username, '|');
 			        	getline(iss, password, '|');
 			        	
-			        	if(lgn==username && passwd == password)
+			        	if(ADT.login(lgn, passwd))
 						{
 						    system("cls");
 						    cout << "Login Successfully!"<<endl<<endl;
@@ -334,9 +447,9 @@ class User
 							system("pause");
 							return login();	
 					inputFile.close();
+				}
+			}
 		}
-	}
-}
 
 
 };
