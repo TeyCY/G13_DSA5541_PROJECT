@@ -1,0 +1,4 @@
+00001|toll claim|from|to|total distance|claim money|
+00002|petrol claim|from|to|total distance|claim money|
+00001|petrol claim|from|to|total distance|claim money|
+00001|stay claim|de|fr|da|gt|

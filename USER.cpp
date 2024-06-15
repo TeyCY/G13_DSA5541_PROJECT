@@ -124,12 +124,12 @@ public:
         }
     }
 
-    bool login(string lgn, string passwd) {
+    bool login(string lgn, string passwd, string &userID) {
     	char ch,ch1;
 		string choice1;
-		string userID;
         for (int i = head; i <= tail; ++i) {
             if (queue[i].username == lgn && queue[i].password == passwd) {
+            	userID = queue[i].userID;
                 return true;
             }
         }
@@ -413,16 +413,8 @@ class User
 					fflush(stdin);
 					cout<<"Password : ";
 					getline(cin,passwd);
-					ifstream inputFile("user_login.txt");
-					string line;
-					while(getline(inputFile,line))
-					{
-						istringstream iss(line);
-			        	getline(iss, userID, '|');
-			        	getline(iss, username, '|');
-			        	getline(iss, password, '|');
-			        	
-			        	if(ADT.login(lgn, passwd))
+					string userID;
+					if(ADT.login(lgn, passwd,userID))
 						{
 						    system("cls");
 						    cout << "Login Successfully!"<<endl<<endl;
@@ -438,15 +430,11 @@ class User
 							}
 			        		break;
 						}
-						
-						
-						
-					}
-					
+						else{
 							cout<<endl<<"Invalid Username or Password Entered! \nPlease try again.";
 							system("pause");
-							return login();	
-					inputFile.close();
+							return login();
+						} 	
 				}
 			}
 		}
