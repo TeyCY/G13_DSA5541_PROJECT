@@ -2,3 +2,5 @@
 00002|petrol claim|from|to|total distance|claim money|
 00001|petrol claim|from|to|total distance|claim money|
 00001|stay claim|de|fr|da|gt|
+00001|toll claim|sa|we|fr|gt|
+00001|petrol claim|sa|gt|ju|vd|
