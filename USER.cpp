@@ -5,17 +5,45 @@
 #include <cstring>
 #include <iomanip>
 #include <cctype>
-
 #include <cstdlib>
 #include <ctime>
-
-
 
 using namespace std;
 void index(string);
 void check_claiming_history(string );
 void apply_claiming();
 void ex();
+
+struct ClaimDetail 
+{
+    string categoryID;
+    string v;
+    string w;
+    string x;
+    string y;
+    string z;
+};
+
+// Struct to store additional user input data
+struct InsertData {
+    string v;
+	string w;
+    string x;
+    string y;
+    string z;
+};
+
+struct Claim {
+	string name;
+	string categoryID;
+    string id;
+    string type;
+    string from;
+    string to;
+    string total_distance;
+    string claim_money;
+    string date;
+};
 
 void trim(string &str) 
 {
@@ -36,377 +64,587 @@ struct claims
 	
 };
 
-class Person {
-public:
-    string userID;
-    string username;
-    string password;
-
-    Person() {}
-
-    Person(string userID, string username, string password)
-        : userID(userID), username(username), password(password) {}
-
+class Person 
+{
+	public:
+	    string userID;
+	    string username;
+	    string password;
+	
+	    Person(){}
+	
+	    Person(string userID, string username, string password): userID(userID), username(username), password(password) {}
 };
 
 class ADTqueue 
 {
-private:
-    Person queue[50];
-    int head, tail;
+	private:
+	    Person queue[50];
+	    int head, tail;
+	
+	public:
+	    ADTqueue()
+		{
+	        tail = -1;
+	        head = 0;
+	    }
+	
+	    int empty()
+		{
+	        return head > tail;
+	    }
+	
+	    int full()
+		{
+	        return tail == 49;
+	    }
+	
+	    void append(Person p)
+		{
+	        if (!full()) 
+			{
+	            tail++;
+	            queue[tail] = p;
+	        } 
+			else 
+			{
+	            cout << "Queue is Full" << endl;
+	        }
+	    }
+	
+	    Person serve() 
+		{
+	        Person p;
+	        if (!empty()) 
+			{
+	            p = queue[head];
+	            head++;
+	            return p;
+	        } 
+			else 
+			{
+	            cout << "Queue is Empty" << endl;
+	            return p;
+	        }
+	    }
+	
+	    void loadFromFile() 
+		{
+	        ifstream file("user_login.txt");
+	        string line;
+	        while (getline(file, line)) 
+			{
+	            stringstream ss(line);
+	            string userID, username, password;
+	
+	            if (getline(ss, userID, '|') && getline(ss, username, '|') && getline(ss, password, '|')) 
+				{
+	                Person p(userID, username, password);
+	                append(p);
+	            }
+	        }
+	        file.close();
+	    }
+	
+		void saveToFile() 
+		{
+	        ofstream file("user_login.txt");
+	        if (!file.is_open()) 
+			{
+	            cout << "Error opening file" << endl;
+	            return;
+	        }
+	
+	        for (int i = head; i <= tail; ++i) 
+			{
+	            file << queue[i].userID << "|" << queue[i].username << "|" << queue[i].password << "|" << endl;
+	        }
+	        file.close();
+	    }
+	
+	    void displayQueue() 
+		{
+	        for (int i = head; i <= tail; ++i) 
+			{
+	            cout << "ID: " << queue[i].userID << ", Name: " << queue[i].username << ", Password: " << queue[i].password << endl;
+	        }
+	    }
+	
+	    bool login(string lgn, string passwd, string &userID) 
+		{
+	    	char ch,ch1;
+			string choice1;
+	        for (int i = head; i <= tail; ++i) 
+			{
+	            if (queue[i].username == lgn && queue[i].password == passwd) 
+				{
+	            	userID = queue[i].userID;
+	                return true;
+	            }
+	        }
+	        return false;
+	    }
+	
+	    bool registerUser(string username) 
+		{
+	        // Check if username already exists
+	        for (int i = head; i <= tail; ++i) 
+			{
+	            if (queue[i].username == username) 
+				{
+	                return false;
+	            }
+	        }
+	        return true;
+	    }
+};
 
-public:
-    ADTqueue() {
-        tail = -1;
-        head = 0;
-    }
-
-    int empty() {
-        return head > tail;
-    }
-
-    int full() {
-        return tail == 49;
-    }
-
-    void append(Person p) {
-        if (!full()) {
-            tail++;
-            queue[tail] = p;
-        } else {
-            cout << "Queue is Full" << endl;
-        }
-    }
-
-    Person serve() {
-        Person p;
-        if (!empty()) {
-            p = queue[head];
-            head++;
-            return p;
-        } else {
-            cout << "Queue is Empty" << endl;
-            return p;
-        }
-    }
-
-    void loadFromFile() {
-        ifstream file("user_login.txt");
-        string line;
-        while (getline(file, line)) {
-            stringstream ss(line);
-            string userID, username, password;
-
-            if (getline(ss, userID, '|') && getline(ss, username, '|') && getline(ss, password, '|')) {
-                Person p(userID, username, password);
-                append(p);
-            }
-        }
-        file.close();
-    }
-
-    void saveToFile() {
-        ofstream file("user_login.txt");
-        if (!file.is_open()) {
-            cout << "Error opening file" << endl;
-            return;
-        }
-
-        for (int i = head; i <= tail; ++i) {
-            file << queue[i].userID << "|" << queue[i].username << "|" << queue[i].password << "|" << endl;
-        }
-        file.close();
-    }
-
-    void displayQueue() {
-        for (int i = head; i <= tail; ++i) {
-            cout << "ID: " << queue[i].userID << ", Name: " << queue[i].username << ", Password: " << queue[i].password << endl;
-        }
-    }
-
-    bool login(string lgn, string passwd, string &userID) {
-    	char ch,ch1;
-		string choice1;
-        for (int i = head; i <= tail; ++i) {
-            if (queue[i].username == lgn && queue[i].password == passwd) {
-            	userID = queue[i].userID;
-                return true;
-            }
-        }
+bool isValidPostcode(const string& postcode)
+{
+    // Check if postcode is exactly 5 digits
+    if (postcode.length() != 5)
+    {
         return false;
     }
 
-    bool registerUser(string username) {
-        // Check if username already exists
-        for (int i = head; i <= tail; ++i) {
-            if (queue[i].username == username) {
-                return false;
+    // Check if all characters are digits
+    for (size_t i = 0; i < postcode.length(); ++i)
+	{
+	    char ch = postcode[i];
+	    if (!isdigit(ch))
+	    {
+	        return false;
+	    }
+	}
+  // If passed all checks, postcode is valid
+    return true;
+}
+
+bool isValidIC(const string& ic)
+{
+    // Check if ic is exactly 12 digits
+    if (ic.length() != 12)
+    {
+        return false;
+    }
+
+    // Check if all characters are digits
+    for (size_t i = 0; i <ic.length(); ++i)
+	{
+	    char ch = ic[i];
+	    if (!isdigit(ch))
+	    {
+	        return false;
+	    }
+	}
+  	// If passed all checks, ic is valid
+    return true;
+}
+
+bool isValidph(const string& contactNumber)
+{
+    // Check if phone number is exactly 8/9 digits
+    if (contactNumber.length() != 8 || contactNumber.length() !=9)
+    {
+        return false;
+    }
+
+    // Check if all characters are digits
+    for (size_t i = 0; i <contactNumber.length(); ++i)
+	{
+	    char ch = contactNumber[i];
+	    if (!isdigit(ch))
+	    {
+	        return false;
+	    }
+	}
+  // If passed all checks, phone number is valid
+    return true;
+}
+
+void readDetailedClaims(Claim*& claims, int& size) {
+    ifstream detailFile("claim_detail.txt");
+    if (!detailFile) {
+        cerr << "Unable to open file claim_detail.txt" << endl;
+        return;
+    }
+
+    string line;
+    int index = 0;
+    while (getline(detailFile, line)) {
+        stringstream ss(line);
+        Claim claim;
+        getline(ss, claim.id, '|');
+        getline(ss, claim.date, '|');
+        getline(ss, claim.from, '|');
+        getline(ss, claim.to, '|');
+        getline(ss, claim.total_distance, '|');
+        getline(ss, claim.claim_money, '|');
+        
+        claims[index++] = claim;
+        size++;
+    }
+
+    detailFile.close();
+}
+
+void merge(Claim* claims, int left, int mid, int right, int sortBy) {
+    int n1 = mid - left + 1;
+    int n2 = right - mid;
+
+    Claim* L = new Claim[n1];
+    Claim* R = new Claim[n2];
+
+    for (int i = 0; i < n1; ++i)
+        L[i] = claims[left + i];
+    for (int j = 0; j < n2; ++j)
+        R[j] = claims[mid + 1 + j];
+
+    int i = 0, j = 0, k = left;
+    while (i < n1 && j < n2) {
+        if (sortBy == 2) { // Sort by category
+            if (L[i].type <= R[j].type) {
+                claims[k] = L[i];
+                ++i;
+            } else {
+                claims[k] = R[j];
+                ++j;
+            }
+        } else { // Default: sort by ID
+            if (L[i].id <= R[j].id) {
+                claims[k] = L[i];
+                ++i;
+            } else {
+                claims[k] = R[j];
+                ++j;
             }
         }
-        return true;
+        ++k;
     }
-};
 
-class User
+    while (i < n1) {
+        claims[k] = L[i];
+        ++i;
+        ++k;
+    }
+
+    while (j < n2) {
+        claims[k] = R[j];
+        ++j;
+        ++k;
+    }
+
+    delete[] L;
+    delete[] R;
+}
+
+
+void mergeSort(Claim* claims, int left, int right, int sortBy) {
+    if (left < right) {
+        int mid = left + (right - left) / 2;
+
+        mergeSort(claims, left, mid, sortBy);
+        mergeSort(claims, mid + 1, right, sortBy);
+
+        merge(claims, left, mid, right, sortBy);
+    }
+}
+
+void displayClaims(const Claim* claims, int size) {
+    for (int i = 0; i < size; ++i) {
+        const Claim& claim = claims[i];
+        cout << claim.id << "|" << claim.type << "|" << claim.from << "|" << claim.to
+             << "|" << claim.total_distance << "|" << claim.claim_money << "|" << endl;
+    }
+}
+
+
+int binarySearch(const Claim* claims, int size, const string& searchCategory) {
+    int left = 0;
+    int right = size - 1;
+
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+
+        if (claims[mid].type == searchCategory) {
+            return mid; // Found the category
+        } else if (claims[mid].type < searchCategory) {
+            left = mid + 1; // Search in the right half
+        } else {
+            right = mid - 1; // Search in the left half
+        }
+    }
+
+    return -1; // Category not found
+}
+
+class User 
 {
 	private:
-		userlogin ul;
-		string userID, name, ic, gender, contactNumber, email, caddress, paddress, state, city, poscode, username, password, cpassword;
-		char choice;
-		int uID;
-		ADTqueue ADT;
-	public:
-    	
-		User()
-		{
-			uID=1;
-		}
-		void user_profile()
-		{
-			ifstream u_profile("User_Profile.txt");
-		    ofstream user_profile;
-		    user_profile.open("User_Profile.txt", ios::app);
-		
-		    if(user_profile.is_open())
-			{
-		        string line;
-		        while(getline(u_profile,line))
-		        {
-		        	uID++;
-				}
-		    }
-		    system("cls");
-		    cout << "*****************************" << endl;
-		    cout << "\tREGISTERATION" << endl;
-		    cout << "*****************************" << endl;
-		    cout << "Name                 : ";
-		    cin.ignore();
-		    getline(cin, name);
-		    cout << "IC Number            : ";
-		    getline(cin, ic);
-		    cout << "Gender (Male/Female) : ";
-		    getline(cin, gender);
-		    cout << "Contact Number       : ";
-		    getline(cin, contactNumber);
-		    cout << "Email                : ";
-		    getline(cin, email);
-		    cout << "Current Address      : ";
-		    getline(cin, caddress);
-		    cout << "Permanent Address    : ";
-		    getline(cin, paddress);
-		    cout << "State                : ";
-		    getline(cin, state);
-		    cout << "City                 : ";
-		    getline(cin, city);
-		    cout << "Postcode             : ";
-		    getline(cin, poscode);
-		
-		    if(user_profile.is_open())
-		    {
-		    	user_profile<<setw(5)<<setfill('0')<<uID<<"|"<<name<<"|"<<ic<<"|"<<gender<<"|"<<contactNumber<<"|"<<email<<"|"<<caddress<<"|"<<paddress<<"|"<<state<<"|"<<city<<"|"<<poscode<<"|"<<endl;
-			}
-			user_profile.close();
-			index(userID);
-		}//end of user_profile
-		
-		void promtprofile(string id)
-		{
-			system("cls");
-			ifstream inputFile;
-			ifstream loginfile;
-			loginfile.open("user_login.txt");
-			inputFile.open("User_Profile.txt");
-			string line;
-			
-			while(getline(inputFile,line))
-			{
-				istringstream iss(line);
-		        getline(iss, userID, '|');
-		        getline(iss, name, '|');
-		        getline(iss, ic, '|');
-		        getline(iss, gender, '|');
-		        getline(iss, contactNumber, '|');
-		        getline(iss, email, '|');
-		        getline(iss, caddress, '|');
-		        getline(iss, paddress, '|');
-		        getline(iss, state, '|');
-		        getline(iss, city, '|');
-		        getline(iss, poscode, '|');
-		        
-		      
-				if(userID==id)
-				{
-					cout<<"+------------------------------------------------+"<<endl;
-					cout<<"Name              : "<<name<<endl;
-					cout<<"IC                : "<<ic<<endl;
-					cout<<"Gender            : "<<gender<<endl;
-					cout<<"Contact Number    : "<<contactNumber<<endl;
-					cout<<"Email             : "<<email<<endl;
-					cout<<"Current Address   : "<<caddress<<endl;
-					cout<<"Permenant Address : "<<paddress<<endl;
-					cout<<"State             : "<<state<<endl;
-					cout<<"City              : "<<city<<endl;
-					cout<<"Poscode           : "<<poscode<<endl;
-					cout<<"+------------------------------------------------+"<<endl;
-					
-				}
-				
-			}
-			inputFile.close();
-			
-			do
-			{
-				cout<<"Press E Continue To Main : ";
-				cin>>choice;
-				if(choice == 'E' || choice == 'e')
-				{
-					index(userID);
-				}
-				else
-				{
-					cout<<"Sorry You Had Enter Wrong Code"<<endl<<endl;
-					cout<<"Press E Continue To Main : ";
-					cin>>choice;
-				}
-			}while(choice == 'E' || choice == 'e');
-		}//end of promptprofile
-		
-		void registration()
-		{
-			char yeayah[2];
-			system("cls");
-			
-			cout << "************************************************" << endl;
-			cout << "\t\tJoin Us Today!" << endl;
-			cout << "************************************************" << "\n\n";
-			
-			cout << "Do you want to register? [Enter Y to continue] : ";
-			cin >> yeayah;
-			
-			if(strlen(yeayah) > 1)
-			{
-				return;
-			}
-			
-			else if(yeayah[0] == 'Y' || yeayah[0] == 'y')
-			{
-				AddNewUser();
-				system("pause");
-			}
-			
-			else
-			{
-				return;
-			}
-		}
-		
-		void AddNewUser()
-		{
-			string unm;
-			string psswd;
-			string psswd2;
-			char save[2];
-			
-			ifstream u_login("user_login.txt");
-		    ofstream user_login;
-		    user_login.open("user_login.txt", ios::app);
-			string line;
-		    while(getline(u_login,line))
-		    {
-		        uID++;
-			}
-			
-			cout<<"User ID: "<<setw(5)<<setfill('0')<<uID<<endl;
-			
-			fflush(stdin);
-			cout <<"Username (at most 8 characters) : ";
-			getline(cin,unm);
-			
-			while(unm.length() <= 0 || unm.length() > 8)  
-			{
-				
-					cout << "Only atmost 8 characters! Please try again.\n" << endl;
-					fflush(stdin);
-					cout << "Username (at most 8 characters) : ";
-					getline(cin, unm);	
-				
-			
-			}
-		
-			fflush(stdin);
-			cout << "Password (at most 8 characters) : ";
-			getline(cin, psswd);
-			
-			while(psswd.length()<0 || psswd.length()>8)  
-			{
-				cout << "Only atmost 8 characters! Please try again.\n" << endl;
-				fflush(stdin);
-				cout << "Password (at most 8 characters) : ";
-				getline(cin, psswd);	
-			}
-			psswd2="";
-			while(psswd2 != psswd)
-			{
-				fflush(stdin);
-				cout << "Confirm your password : ";
-				getline(cin, psswd2);
-				if(psswd2 != psswd)
-				{
-					cout << "\n>Both password is not same! Please try again. <\n\n";
-				}
-			}
-			cout <<endl<< "Is all your information correct? [Enter Y to save] :";
-			cin >> save;
-			
-			if(strlen(save) > 1)
-			{
-			
-				return;
-			}
-			if(save[0] == 'Y' || save[0] == 'y')
-			{
-				ofstream user_login("user_login.txt", ios::app);
-				if(!user_login)
-				{
-					system("cls");
-					cout << "File doesn't exist";
-					exit(0);
-				}
-				user_login<<setw(5)<<setfill('0')<<uID;
-				user_login<<"|"<<unm<<"|"<<psswd <<"|"<<endl;
-				user_login.close();
-				cout << "\n>Your Account is created successfully! Try to login now!" << "\n";
-				login();
-			}
-		}
+	    string userID, name, ic, gender, contactNumber, email, caddress, paddress, state, city, poscode, username, password;
+	    char choice;
+	    int uID;
+	    ADTqueue ADT;
 	
-
-		void login()
+	public:
+	    User() 
 		{
-			string lgn;
+	        uID = 1;
+	    }
+	
+	    void user_profile() 
+		{
+	        ifstream u_profile("User_Profile.txt");
+	        ofstream user_profile;
+	        user_profile.open("User_Profile.txt", ios::app);
+	
+	        if (user_profile.is_open()) 
+			{
+	            string line;
+	            while (getline(u_profile, line)) 
+				{
+	                uID++;
+	            }
+	        }
+	        system("cls");
+	        cout << "*****************************" << endl;
+	        cout << "\tREGISTRATION" << endl;
+	        cout << "*****************************" << endl;
+	        cout << "Name                 : ";
+	        cin.ignore();
+	        getline(cin, name);
+	        cout << "IC Number            : ";
+	        getline(cin, ic);
+	        while (!isValidIC(ic)) 
+			{
+	            cout << "Invalid IC format. Please enter a valid 12-digit IC£¡" << endl;
+	        	cout << "IC Number            : ";
+	            getline(cin, ic);
+	        }
+	        cout << "Gender (Male/Female) : ";
+	        getline(cin, gender);
+	        cout << "Contact Number       : +601";
+	        getline(cin, contactNumber);
+	        while (!isValidIC(ic)) 
+			{
+	            cout << "Invalid Phone Number format. Please enter a valid 8/9 digit number£¡" << endl;
+	        	cout << "Contact Number       : ";
+	            getline(cin, contactNumber);
+	        }
+	        cout << "Email                : ";
+	        getline(cin, email);
+	        cout << "Current Address      : ";
+	        getline(cin, caddress);
+	        cout << "Permanent Address    : ";
+	        getline(cin, paddress);
+	        cout << "State                : ";
+	        getline(cin, state);
+	        cout << "City                 : ";
+	        getline(cin, city);
+	        cout << "Postcode             : ";
+	        getline(cin, poscode);
+	
+	        while (!isValidPostcode(poscode)) 
+			{
+	            cout << "Invalid Postcode format. Please enter a valid 5-digit postcode£¡" << endl;
+	            cout << "Postcode             : ";
+	            getline(cin, poscode);
+	        }
+	
+	        if (user_profile.is_open()) 
+			{
+	            user_profile << setw(5) << setfill('0') << uID << "|" << name << "|" << ic << "|" << gender << "|" << contactNumber << "|" << email << "|" << caddress << "|" << paddress << "|" << state << "|" << city << "|" << poscode << "|" << endl;
+	        }
+	        user_profile.close();
+	        index(userID);
+	    } // end of user_profile
+	
+	    void promtprofile(string id) 
+		{
+	        system("cls");
+	        ifstream inputFile;
+	        inputFile.open("User_Profile.txt");
+	        string line;
+	
+	        while (getline(inputFile, line)) 
+			{
+	            istringstream iss(line);
+	            getline(iss, userID, '|');
+	            getline(iss, name, '|');
+	            getline(iss, ic, '|');
+	            getline(iss, gender, '|');
+	            getline(iss, contactNumber, '|');
+	            getline(iss, email, '|');
+	            getline(iss, caddress, '|');
+	            getline(iss, paddress, '|');
+	            getline(iss, state, '|');
+	            getline(iss, city, '|');
+	            getline(iss, poscode, '|');
+	
+	            if (userID == id) 
+				{
+	                cout << "+------------------------------------------------+" << endl;
+	                cout << "Name              : " << name << endl;
+	                cout << "IC                : " << ic << endl;
+	                cout << "Gender            : " << gender << endl;
+	                cout << "Contact Number    : " << contactNumber << endl;
+	                cout << "Email             : " << email << endl;
+	                cout << "Current Address   : " << caddress << endl;
+	                cout << "Permenant Address : " << paddress << endl;
+	                cout << "State             : " << state << endl;
+	                cout << "City              : " << city << endl;
+	                cout << "Poscode           : " << poscode << endl;
+	                cout << "+------------------------------------------------+" << endl;
+	            }
+	        }
+	        inputFile.close();
+	
+	        do 
+			{
+	            cout << "Press E to Continue to Main : ";
+	            cin >> choice;
+	            if (choice == 'E' || choice == 'e') 
+				{
+	                index(userID);
+	            } 
+				else 
+				{
+	                cout << "Sorry, you entered the wrong code." << endl << endl;
+	                cout << "Press E to Continue to Main : ";
+	                cin >> choice;
+	            }
+	        } while (choice != 'E' && choice != 'e');
+	    } // end of promtprofile
+	
+	    void registration() 
+		{
+	        char yeayah[2];
+	        system("cls");
+	
+	        cout << "************************************************" << endl;
+	        cout << "\t\tJoin Us Today!" << endl;
+	        cout << "************************************************" << "\n\n";
+	
+	        cout << "Do you want to register? [Enter Y to continue] : ";
+	        cin >> yeayah;
+	
+	        if (strlen(yeayah) > 1) 
+			{
+	            return;
+	        } 
+			else if (yeayah[0] == 'Y' || yeayah[0] == 'y') 
+			{
+	            AddNewUser();
+	            system("pause");
+	        } 
+			else 
+			{
+	            return;
+	        }
+	    }
+	
+	    void AddNewUser() 
+		{
+	        string unm;
+	        string psswd;
+	        string psswd2;
+	        char save[2];
+	
+	        ifstream u_login("user_login.txt");
+	        ofstream user_login;
+	        user_login.open("user_login.txt", ios::app);
+	        string line;
+	        while (getline(u_login, line)) 
+			{
+	            uID++;
+	        }
+	
+	        cout << "User ID: " << setw(5) << setfill('0') << uID << endl;
+	
+	        fflush(stdin);
+	        cout << "Username (at most 8 characters) : ";
+	        getline(cin, unm);
+	
+	        while (unm.length() <= 0 || unm.length() > 8) 
+			{
+	            cout << "Only at most 8 characters! Please try again.\n" << endl;
+	            fflush(stdin);
+	            cout << "Username (at most 8 characters) : ";
+	            getline(cin, unm);
+	        }
+	
+	        fflush(stdin);
+	        cout << "Password (at most 8 characters) : ";
+	        getline(cin, psswd);
+	
+	        while (psswd.length() < 0 || psswd.length() > 8) 
+			{
+	            cout << "Only at most 8 characters! Please try again.\n" << endl;
+	            fflush(stdin);
+	            cout << "Password (at most 8 characters) : ";
+	            getline(cin, psswd);
+	        }
+	        psswd2 = "";
+	        while (psswd2 != psswd) 
+			{
+	            fflush(stdin);
+	            cout << "Confirm your password : ";
+	            getline(cin, psswd2);
+	            if (psswd2 != psswd) 
+				{
+	                cout << "\n>Both passwords are not the same! Please try again. <\n\n";
+	            }
+	        }
+	        cout << endl << "Is all your information correct? [Enter Y to save] :";
+	        cin >> save;
+	
+	        if (strlen(save) > 1) 
+			{
+	            return;
+	        }
+	        if (save[0] == 'Y' || save[0] == 'y') 
+			{
+	            ofstream user_login("user_login.txt", ios::app);
+	            if (!user_login) 
+				{
+	                system("cls");
+	                cout << "File doesn't exist";
+	                exit(0);
+	            }
+	            user_login << setw(5) << setfill('0') << uID;
+	            user_login << "|" << unm << "|" << psswd << "|" << endl;
+	            user_login.close();
+	            cout << "\n>Your account is created successfully! Try to login now!" << "\n";
+	            login();
+	        }
+	    }
+	
+	    void login() 
+		{
+	        string lgn;
 			string passwd;
 			string getup;
 			char ch,ch1;
 			string choice1;
 			ADT.loadFromFile();
-					
-			for(int z=0;z<3;z++)
+	
+	        for (int z = 0; z < 3; z++) 
 			{
-				system("cls");
-				cout << "****************************************"<<endl;
-				cout << "\tLogin with your account!"<<endl;
-				cout << "****************************************";
-				cout<<endl;
-				cout<<"Exit [Type E]" << "\n\n";
-				lgn="";
-				passwd="";
-				fflush(stdin);
-				cout<< "Username : ";
-				getline(cin, lgn);
-				if(lgn=="E" || lgn=="e")
+	            system("cls");
+	            cout << "****************************************" << endl;
+	            cout << "\tLogin with your account!" << endl;
+	            cout << "****************************************";
+	            cout << endl;
+	            cout << "Exit [Type E]" << "\n\n";
+	            lgn = "";
+	            passwd = "";
+	            fflush(stdin);
+	            cout << "Username : ";
+	            getline(cin, lgn);
+	            if (lgn == "E" || lgn == "e") 
 				{
-					return;
-				}
+	                return;
+	            } 
 				else
 				{
 					cout<<endl;
@@ -418,695 +656,365 @@ class User
 						{
 						    system("cls");
 						    cout << "Login Successfully!"<<endl<<endl;
-						    cout<<"Have You Filled In Your Personal Information [Y/N] : ";
-						    cin>>ch1;
-						    if(ch1=='Y' || ch1=='y')
-						    {
-			        			index(userID);
-			        		}
-			        		else if(ch1=='N' || ch1=='n')
-			        		{
-			        			user_profile();
-							}
-			        		break;
+						    if (isProfileFilled(userID)) 
+							{
+	                            index(userID);
+	                        } 
+							else 
+							{
+	                            cout << "You haven't filled in your personal information yet. Please fill in your profile." << endl;
+	                            user_profile();
+	                        }
+	                        return;
 						}
-						else{
+						else
+						{
 							cout<<endl<<"Invalid Username or Password Entered! \nPlease try again.";
 							system("pause");
 							return login();
 						} 	
 				}
-			}
+	            
+	            }
+	        }
+	    
+		
+	    bool isProfileFilled(string id)
+		{
+	        ifstream inputFile("User_Profile.txt");
+	        string line;
+	        while (getline(inputFile, line)) {
+	            istringstream iss(line);
+	            getline(iss, userID, '|');
+	            if (userID == id) {
+	                return true;
+	            }
+	        }
+	        return false;
+	    }
+	
+	   bool isValidPostcode(const string &postcode) 
+	   {
+		    if (postcode.length() != 5) return false;
+		    for (size_t i = 0; i < postcode.length(); ++i) 
+			{
+		        if (!isdigit(postcode[i])) return false;
+		    }
+		    return true;
 		}
-
-
+		
+		bool isValidIC(const string &ic) 
+	   	{
+		    if (ic.length() != 12) return false;
+		    for (size_t i = 0; i < ic.length(); ++i) 
+			{
+		        if (!isdigit(ic[i])) return false;
+		    }
+		    return true;
+		}
+		
+		bool isValidph(const string &contactNumber) 
+	   	{
+		    if (contactNumber.length() != 8 || contactNumber.length() !=9)
+		    {
+		    	return false;
+			}
+		    for (size_t i = 0; i < contactNumber.length(); ++i) 
+			{
+		        if (!isdigit(contactNumber[i])) return false;
+		    }
+		    return true;
+		}    
 };
 
-class claiming
+class claiming: public User
 {
-	protected:
-	claims c;
-	public:
+	const string customerID = "00001";
+    string line;
+    string categoryID_input;
+
+    // Open the claim.txt file
+    ifstream inFiles("claim.txt");
+
+    if (!inFiles) {
+        cerr << "Unable to open file claim.txt" << endl;
+        return 1;
+    }
+
+    // Read file content and display claim item options line by line
+    cout<<"\t+-------- Make a Choice --------+"<<endl;
+	cout<<"\t                               "<<endl;
+    while (getline(inFiles, line)) 
+	{
+        istringstream iss(line);
+
+        string categoryID;
+        string claim_name;
+
+        getline(iss, categoryID, '|');  // Read categoryID
+        getline(iss, claim_name, '|');  // Read claim_name
+
+		cout<<"\t    ["<<categoryID<<"] "<<claim_name<<"       "<<endl;
+		        
+    }
 		
-		int userID,claimID;
+    // Close claim.txt file
+    inFiles.close();
+    cout<<""<<endl;
+	cout<<"\t+-------------------------------+"<<endl;
+	cout<<"\tEnter Your Choice : ";
+    // Get customer's selected claim item
+    getline(cin, categoryID_input);  // Use getline to get the entire line input
+
+    // Find the category name
+    string selectedCategoryName;
+    ifstream categoryFile("claim.txt");
+    if (!categoryFile) {
+        cerr << "Unable to open file claim.txt" << endl;
+        return 1;
+    }
+
+    while (getline(categoryFile, line)) 
+	{
+        istringstream iss(line);
+
+        string categoryID;
+        string claim_name;
+
+        getline(iss, categoryID, '|');  // Read categoryID
+        getline(iss, claim_name, '|');  // Read claim_name
+
+        if (categoryID == categoryID_input) {
+            selectedCategoryName = claim_name;
+            break;
+        }
+        
+    }
+
+    // Close claim.txt file
+    categoryFile.close();
+
+    // Open claim_detail.txt file and find the matching claim item details
+    ifstream detailFile("claim_detail.txt");
+
+    if (!detailFile) {
+        cerr << "Unable to open file claim_detail.txt" << endl;
+        return 1;
+    }
+
+    bool found = false;
+    ClaimDetail selectedClaim;
+
+    // Read claim_detail.txt file content and find the matching claim item details
+    while (getline(detailFile, line)) {
+        istringstream iss(line);
 		
-		claiming()
-		{
-			cout<<"++++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl;
-			cout<<"\t  Welcome To TTWC E-Claming System"<<endl;
-			cout<<"++++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl;
-		}
-		~claiming()
-		{
-			cout<<"++++++++++++++++++++++++"<<endl;
-			cout<<"THANK YOU"<<endl;
-			cout<<"++++++++++++++++++++++++"<<endl;
-		}
-		
-		void petrol()
-		{
-			int cID,uID;
-			
-		    cout<<"+------------------------------------------+"<<endl;
-			cout<<"\t\tPETROL CLAIM"<<endl;
-			cout<<"+------------------------------------------+"<<endl;	
-			cout<<"DATE                   : ";
-			cin.ignore();
-			getline(cin,c.date);
-			cout<<"DEPARTURE POINT        : ";
-			getline(cin,c.departure);
-			cout<<"DESTINATION            : ";
-			getline(cin,c.destination);
-			cout<<"TOTAL DISTANCE (KM)    : ";
-			getline(cin,c.total);
-			cout<<"DEPARTURE TIME (AM|PM) : ";
-			getline(cin,c.start_time);
-			cout<<"ARRIVE TIME (AM|PM)    : ";
-			getline(cin,c.end_time);
-			
-			ifstream inFile("petrol.txt");
-			ofstream outFile("petrol.txt", ios::app);
-			string line;
-			while(getline(inFile,line))
-		    {
-		        cID++;
-			}
-			
-			ifstream ifile("user_login.txt");
-			while(getline(ifile,line))
-			{
-				istringstream iss(line);
-				string username,password;
-				iss>>uID;
-				getline(iss, username, '|');
-		        getline(iss, password, '|');
-			}
-			
-			outFile<<cID<<'|'<<setw(5)<<setfill('0')<<uID<<'|'<<c.date<<'|'<<c.departure<<'|'<<c.destination<<'|'<<c.total<<'|'<<c.start_time<<'|'<<c.end_time<<'|'<<"PENDING"<<'\n';
-			inFile.close();
-			outFile.close();
-			ifile.close();
-			cout<<"+------------------------------------------+"<<endl;
-			cout<<"Request Successfully. You need to wait for 1 to 3 working days for process."<<endl;
-			cin.get();
-			
-			apply_claiming();
-		}
-		
-		void toll()
-		{
-			int cID,uID;
-			cout<<"+-----------------------------------------+"<<endl;
-			cout<<"\t\tTOLL CLAIM"<<endl;
-			cout<<"+-----------------------------------------+"<<endl;
-			cout<<"DATE                      : ";
-			cin.ignore();
-			getline(cin,c.date);
-			cout<<"FIRST TOLL                : ";
-			getline(cin,c.departure);
-			cout<<"LAST TOLL                 : ";
-			getline(cin,c.destination);
-			cout<<"TOTAL DISTANCE(COME&BACK) : ";
-			getline(cin,c.total);
-			cout<<"EXPENSES IN TOLL (RM)     : ";
-			getline(cin,c.expenses);
-			
-			ifstream inFile("toll.txt");
-			ofstream outFile("toll.txt", ios::app);
-			string line;
-			while(getline(inFile,line))
-		    {
-		        cID++;
-			}
-			
-			ifstream ifile("user_login.txt");
-			while(getline(ifile,line))
-			{
-				istringstream iss(line);
-				string username,password;
-				iss>>uID;
-				getline(iss, username, '|');
-		        getline(iss, password, '|');
-			}
-			outFile<<cID<<'|'<<setw(5)<<setfill('0')<<uID<<'|'<<c.date<<'|'<<c.departure<<'|'<<c.destination<<'|'<<c.total<<'|'<<c.expenses<<'|'<<"PENDING"<<'\n';
-			inFile.close();
-			outFile.close();
-			ifile.close();
-			
-			cout<<"+-----------------------------------------+"<<endl;
-			cout<<"Request Successfully. You need to wait for 1 to 3 working days for process."<<endl;
-			cin.get();
-			apply_claiming();
-		}
-		
-		void overnight()
-		{
-			int cID,uID;
-			cout<<"+--------------------------------------------------+"<<endl;
-			cout<<"\t\tOVERNIGHT STAY CLAIM"<<endl;
-			cout<<"+--------------------------------------------------+"<<endl;
-			cout<<"DATE (XX TO YY)                 : ";
-			cin.ignore();
-			getline(cin,c.date);
-			cout<<"OVERNIGHT STAYCATION ADDRESS    : ";
-			getline(cin,c.address);
-			cout<<"NUMBER OF DAYS STAY             : ";
-			getline(cin,c.days);
-			cout<<"PPRICE|DAY                      : RM ";
-			getline(cin,c.expenses); 
-			
-			ifstream inFile("overnight.txt");
-			ofstream outFile("overnight.txt", ios::app);
-			string line;
-			while(getline(inFile,line))
-		    {
-		        cID++;
-			}
-			ifstream ifile("user_login.txt");
-			while(getline(ifile,line))
-			{
-				istringstream iss(line);
-				string username,password;
-				iss>>uID;
-				getline(iss, username, '|');
-		        getline(iss, password, '|');
-			}
-			
-			outFile<<cID<<'|'<<setw(5)<<setfill('0')<<uID<<'|'<<c.date<<'|'<<c.address<<'|'<<c.days<<'|'<<c.expenses<<'|'<<"PENDING"<<'\n';
-			inFile.close();
-			outFile.close();
-			ifile.close();
-			
-			cout<<"+--------------------------------------------------+"<<endl;
-			cout<<"Request Successfully. You need to wait for 1 to 3 working days for process."<<endl;
-			cin.get();
-			apply_claiming();
-		}
-		
-		void givetutorial()
-		{
-			int cID,uID;
-			cout<<"+-----------------------------------------------+"<<endl;
-			cout<<"\t\tINSTURCTOR CLAIM"<<endl;
-			cout<<"+-----------------------------------------------+"<<endl;
-			cout<<"DATE                       : ";
-			cin.ignore();
-			getline(cin,c.date);
-			cout<<"INSTRUCTOR LOCATION        : ";
-			getline(cin,c.address);
-			cout<<"START TIME                 : ";
-			getline(cin,c.start_time);
-			cout<<"END TIME                   : ";
-			getline(cin,c.end_time);
-			cout<<"TOTAL TIME                 : ";
-			getline(cin,c.total);
-			
-			ifstream inFile("givetutorial.txt");
-			ofstream outFile("givetutorial.txt", ios::app);
-			string line;
-			
-			while(getline(inFile,line))
-		    {
-		        cID++;
-			}
-			
-			ifstream ifile("user_login.txt");
-			while(getline(ifile,line))
-			{
-				istringstream iss(line);
-				string username,password;
-				iss>>uID;
-				getline(iss, username, '|');
-		        getline(iss, password, '|');
-			}
-			outFile<<cID<<'|'<<setw(5)<<setfill('0')<<uID<<'|'<<c.date<<'|'<<c.address<<'|'<<c.start_time<<'|'<<c.end_time<<'|'<<c.total<<'|'<<"PENDING"<<'\n';
-			inFile.close();
-			outFile.close();
-			ifile.close();
-			
-			cout<<"+-----------------------------------------------+"<<endl;
-			cout<<"Request Successfully. You need to wait for 1 to 3 working days for process."<<endl;
-			cin.get();
-			apply_claiming();
-		}
-		
-		void papermarking()
-		{
-			int cID,uID;
-			cout<<"+----------------------------------------------------------------+"<<endl;
-			cout<<"\t\tPAPER MARKING CLAIM"<<endl;
-			cout<<"+----------------------------------------------------------------+"<<endl;
-			cout<<"SUBJECT                        : ";
-			cin.ignore();
-			getline(cin,c.subject);
-			cout<<"TOTAL NUMBER OF PAPER MARKING  : ";
-			getline(cin,c.total);
-			
-			ifstream inFile("papermark.txt");
-			ofstream outFile("papermark.txt", ios::app);
-			string line;
-			
-			while(getline(inFile,line))
-		    {
-		        cID++;
-			}
-			
-			ifstream ifile("user_login.txt");
-			while(getline(ifile,line))
-			{
-				istringstream iss(line);
-				string username,password;
-				iss>>uID;
-				getline(iss, username, '|');
-		        getline(iss, password, '|');
-			}
-			
-			outFile<<cID<<'|'<<setw(5)<<setfill('0')<<uID<<'|'<<c.subject<<'|'<<c.total<<'|'<<"PENDING"<<'\n';
-			inFile.close();
-			outFile.close();
-			ifile.close();
-			
-			cout<<"+---------------------------------+"<<endl;
-			cout<<"Request Successfully. You need to wait for 1 to 3 working days for process."<<endl;
-			cin.get();
-			apply_claiming();
-			
-		} 
-		friend class check;
+        string tempCategoryID;
+        string date;
+        string from;
+        string to;
+        string total_distance;
+        string claim_money;
+
+        getline(iss, tempCategoryID, '|');  // Read categoryID
+        getline(iss, date, '|');
+        getline(iss, from, '|');
+        getline(iss, to, '|');
+        getline(iss, total_distance, '|');
+        getline(iss, claim_money, '|');
+
+        if (tempCategoryID == categoryID_input) {
+            // If a matching categoryID is found, save the details and mark as found
+            found = true;
+            selectedClaim.categoryID = tempCategoryID;
+            selectedClaim.v = date;
+            selectedClaim.w = from;
+            selectedClaim.x = to;
+            selectedClaim.y = total_distance;
+            selectedClaim.z = claim_money;
+            break;  // Can exit the loop early since a match was found
+        }
+    }
+
+    // Close claim_detail.txt file
+    detailFile.close();
+
+
+    // If a matching claim item is found, display the details; otherwise, show not found message
+    if (found) 
+	{
+    	system("cls");
+        InsertData userInsertData;
+
+		cout << selectedClaim.v << ": ";
+        getline(cin, userInsertData.v);
+        cout << selectedClaim.w << ": ";
+        getline(cin, userInsertData.w);
+        cout << selectedClaim.x << ": ";
+        getline(cin, userInsertData.x);
+        cout << selectedClaim.y << ": ";
+        getline(cin, userInsertData.y);
+        cout << selectedClaim.z << ": ";
+        getline(cin, userInsertData.z);
+
+        // Output the additional information entered by the user
+        cout << "\nInformation:" << endl;
+        cout << selectedClaim.w << ": " << userInsertData.v << endl;
+        cout << selectedClaim.w << ": " << userInsertData.w << endl;
+        cout << selectedClaim.x << ": " << userInsertData.x << endl;
+        cout << selectedClaim.y << ": " << userInsertData.y << endl;
+        cout << selectedClaim.z << ": " << userInsertData.z << endl;
+
+        // Write the user input data to claim_request.txt file
+        ofstream outFile("claim_request.txt", ios::app);
+        if (!outFile) {
+            cerr << "Unable to open file claim_request.txt" << endl;
+            return 1;
+        }
+
+        outFile << "\n" << customerID << "|" << selectedCategoryName << "|" << userInsertData.v << "|" << userInsertData.w << "|" << userInsertData.x << "|" << userInsertData.y << "|" << userInsertData.z << "|";
+
+        // Close the output file
+        outFile.close();
+
+        cout << "\nData has been successfully saved!!!" << endl;
+    } 
+	else 
+	{
+        cout << "No details found for the selected claim item." << endl;
+    }
+
+    return 0;
+    friend class check; 
 };
 
 class check:public claiming
 {
-	claims c;
-	public:
-		int uID;
-		
-		char choice;
-		
-		void check_petrol(claiming& cl,string id)
-		{
-			float km=0,rm=0,total=0,expected=0;
-		bool found = false;
-			system("cls");
-			ifstream check("petrol.txt");
-			ifstream ulo("user_login.txt");
-			ofstream wid("petrol.txt",ios::app);
-			if(!check)
-		    {
-		        cout<<"File does not exist"<<endl;
-		       
-		    }
-			string line,status;
-	    	while (getline(check, line))
-			{
-		        istringstream iss(line);
-		        getline(iss, c.claimID, '|');
-		        getline(iss, c.userID, '|');
-		        getline(iss, c.date, '|');
-		        getline(iss, c.departure, '|');
-		        getline(iss, c.destination, '|');
-		        getline(iss, c.total, '|');
-		        stringstream ss(c.total);
-			    ss>>km;
-		        getline(iss, c.start_time, '|');
-		        getline(iss, c.end_time, '|');
-		        getline(iss, c.status, '|');
-		        if (c.status.empty())
-				{
-				    c.status = "PENDING";
-				}
-		        
-		       	if(c.userID==id){
-		       		found=true;
-		       			cout<<"+------------------------------------------+"<<endl;
-					    cout<<"\t\tPETROL CLAIM"<<endl;
-					    cout<<"+------------------------------------------+"<<endl;
-						cout<<"DATE                   : "<<c.date<<endl;
-						cout<<"DEPARTURE POINT        : "<<c.departure<<endl;
-						cout<<"DESTINATION            : "<<c.destination<<endl;
-						cout<<"TOTAL DISTANCE (KM)    : "<<c.total<<endl;
-						cout<<"DEPARTURE TIME (AM|PM) : "<<c.start_time<<endl;
-						cout<<"ARRIVE TIME (AM|PM)    : "<<c.end_time<<endl;
-						cout<<"STATUS                 : "<<c.status<<endl;
-						cout<<"+------------------------------------------+"<<endl;
-						if (c.status=="PENDING")
-						{
-							rm=km*0.60;
-							cout<<"Claim (Expected) : RM"<<rm<<endl;
-							expected+=rm;
-						}
-						if(c.status=="APPROVED")
-						{
-							rm=km*0.60;
-							cout<<"Claim            : RM"<<rm<<endl;
-							total+=rm;
-						}
-						else if(c.status=="REJECTED")
-						{
-							rm=0.00;
-							cout<<"Claim            : RM"<<rm<<endl;
-						}
-						
-				   }
-		       	
-				
-		       	}
-			    if(!found){
-					cout<<"No history found"<<endl;
-				}else{
-					cout<<"\n+-----------------------------------------------+"<<endl;
-						cout<<"Total Claim (Expected) : RM"<<expected<<endl;
-						cout<<"Total Claim Approved   : RM"<<total<<endl;
-						cout<<"+-----------------------------------------------+"<<endl;
-				}
-				
-				cout<<"Press E To Back To Check Claiming Page : "<<endl;
-				cin>>choice;
-				if(choice== 'E' || choice == 'e')
-				{
-					check_claiming_history(id);
-				}
-			//end while
-			check.close();	
-		}
-		
-		void check_toll(string id)
-		{
-			float km=0,rm=0,total=0,expected=0;
-		bool found = false;
-			system("cls");
-			int compare,claimID;
-			ifstream check("toll.txt");
-			ifstream ulo("user_login.txt");
-			ofstream wid("toll.txt",ios::app);
-			if(!check)
-		    {
-		        cout<<"File does not exist"<<endl;
-		        
-		    }
-			string line,status;
-	    	while (getline(check, line))
-			{
-		        istringstream iss(line);
-		        getline(iss, c.claimID, '|');
-		        getline(iss, c.userID, '|');
-		        getline(iss, c.date, '|');
-		        getline(iss, c.departure, '|');
-		        getline(iss, c.destination, '|');
-		        getline(iss, c.total, '|');
-		        stringstream ss(c.total);
-			    ss>>km;
-		        getline(iss, c.expenses, '|');
-		        getline(iss, c.status, '|');
-		        
-		       
-		       	if(c.userID==id){
-		       		found=true;
-		    	cout<<"+----------------------------------------+"<<endl;
-			    cout<<"\t\tTOLL CLAIM"<<endl;
-			    cout<<"+----------------------------------------+"<<endl;
-			    cout<<"DATE                      : "<<c.date<<endl;
-				cout<<"FIRST TOLL                : "<<c.departure<<endl;
-				cout<<"LAST TOLL                 : "<<c.destination<<endl;
-				cout<<"TOTAL DISTANCE(COME&BACK) : "<<c.total<<endl;
-				cout<<"EXPENSES IN TOLL (RM)     : "<<c.expenses<<endl;
-				cout<<"STATUS                    : "<<c.status<<endl;
-				cout<<"+----------------------------------------+"<<endl;
-				if (c.status=="PENDING")
-				{
-					rm=km*0.60;
-					cout<<"Claim (Expected) : RM"<<rm<<endl;
-					expected+=rm;
-				}
-				if(c.status=="APPROVED")
-				{
-					rm=km*0.60;
-					cout<<"Claim            : RM"<<rm<<endl;
-					total+=rm;
-				}
-				else if(c.status=="REJECTED")
-				{
-					rm=0.00;
-					cout<<"Claim            : RM"<<rm<<endl;
-				}
-				   }
-		       	
-		    }
-		    if(!found){
-					cout<<"No history found"<<endl;
-				}else{
-					cout<<"\n+-----------------------------------------------+"<<endl;
-				cout<<"Total Claim (Expected) : RM"<<expected<<endl;
-				cout<<"Total Claim Approved   : RM"<<total<<endl;
-				cout<<"+-----------------------------------------------+"<<endl;
-				}
-		    
-		    cout<<"Press E To Back To Check Claiming Page : "<<endl;
-				cin>>choice;
-				if(choice== 'E' || choice == 'e')
-				{
-					check_claiming_history(id);
-				}
-		    check.close();
-		}
-		
-		void check_overnight(string id)
-		{
-			float km=0,rm=0,total=0,expected=0;
-		bool found = false;
-			system("cls");
-			int compare;
-			ifstream check("overnight.txt");
-			ifstream ulo("user_login.txt");
-			ofstream wid("overnight.txt",ios::app);
-			if(!check)
-		    {
-		        cout<<"File does not exist"<<endl;
-		        exit(0);
-		    }
-			string line,status;
-	    	while (getline(check, line))
-			{
-		        istringstream iss(line);
-		        getline(iss, c.claimID, '|');
-		        getline(iss, c.userID, '|');
-		        getline(iss, c.date, '|');
-		        getline(iss, c.address, '|');
-		        getline(iss, c.days, '|');
-		        stringstream ss(c.days);
-			    ss>>km;
-		        getline(iss, c.expenses, '|');
-		        
-		        getline(iss, c.status, '|');
-		       	if(c.userID==id){
-		       		found=true;
-		       		cout<<"+-------------------------------------+"<<endl;
-			        cout<<"\tOVERNIGHT STAY CLAIM"<<endl;
-			        cout<<"+-------------------------------------+"<<endl;
-			        cout<<"DATE (XX TO YY)      : "<<c.date<<endl;
-					cout<<"OVERNIGHT STAYCATION : "<<c.address<<endl;
-					cout<<"NUMBER OF DAYS STAY  : "<<c.days<<endl;
-					cout<<"PRICE (PER DAY)      : RM "<<c.expenses<<endl;
-			    	cout<<"STATUS               : "<<c.status<<endl;
-			    	cout<<"+-------------------------------------+"<<endl;
-			    	
-			    	if (c.status=="PENDING")
-					{
-						rm=km*0.60;
-						cout<<"Claim (Expected) : RM"<<rm<<endl;
-						expected+=rm;
-					}
-					if(c.status=="APPROVED")
-					{
-						rm=km*0.60;
-						cout<<"Claim            : RM"<<rm<<endl;
-						total+=rm;
-					}
-					else if(c.status=="REJECTED")
-					{
-						rm=0.00;
-						cout<<"Claim            : RM"<<rm<<endl;
-					}
-				   }
-			}
-			if(!found){
-					cout<<"No history found"<<endl;
-				}else{
-					cout<<"\n+-----------------------------------------------+"<<endl;
-			cout<<"Total Claim (Expected) : RM"<<expected<<endl;
-			cout<<"Total Claim Approved   : RM"<<total<<endl;
-			cout<<"+-----------------------------------------------+"<<endl;
-				}
-			
-			
-			
-			cout<<"Press E To Back To Check Claiming Page : "<<endl;
-				cin>>choice;
-				if(choice== 'E' || choice == 'e')
-				{
-					check_claiming_history(id);
-				}
-		    check.close();
-		}
-		
-		void check_instruction(string id)
-		{
-			float km=0,rm=0,total=0,expected=0;
-		bool found = false;
-			system("cls");
-			int compare;
-			ifstream check("givetutorial.txt");
-			ifstream ulo("user_login.txt");
-			ofstream wid("givetutorial.txt",ios::app);
-			if(!check)
-		    {
-		        cout<<"File does not exist"<<endl;
-		        exit(0);
-		    }
-			string line,status;
-	    	while (getline(check, line))
-			{
-		        istringstream iss(line);
-		        getline(iss, c.claimID, '|');
-		        getline(iss, c.userID, '|');
-		        getline(iss, c.date, '|');
-		        getline(iss, c.address, '|');
-		        getline(iss, c.start_time, '|');
-		        getline(iss, c.end_time, '|');
-		        getline(iss, c.total, '|');
-		        stringstream ss(c.total);
-			    ss>>km;
-		        getline(iss, c.status, '|');
-		        if(c.userID==id){
-		        	found=true;
-			        cout<<"+------------------------------+"<<endl;
-			        cout<<"\tINSTRUCTOR CLAIM"<<endl;
-			        cout<<"+------------------------------+"<<endl;
-			        cout<<"DATE               : "<<c.date<<endl;
-					cout<<"DESTINATION        : "<<c.address<<endl;
-					cout<<"START TIME (AM/PM) : "<<c.start_time<<endl;
-					cout<<"END TIME (AM/PM)   : "<<c.end_time<<endl;
-					cout<<"TOTAL              : "<<c.total<<endl;
-					cout<<"STATUS             : "<<c.status<<endl;
-					cout<<"+------------------------------+"<<endl;
-					if (c.status=="PENDING")
-			{
-				rm=km*0.60;
-				cout<<"Claim (Expected) : RM"<<rm<<endl;
-				expected+=rm;
-			}
-			if(c.status=="APPROVED")
-			{
-				rm=km*0.60;
-				cout<<"Claim            : RM"<<rm<<endl;
-				total+=rm;
-			}
-			else if(c.status=="REJECTED")
-			{
-				rm=0.00;
-				cout<<"Claim            : RM"<<rm<<endl;
-			}
-				}
+	ifstream inFile("claim.txt");
+    ifstream infile("claim_request.txt");
+    if (!infile.is_open()) {
+        cerr << "Failed to open file claim_request.txt." << endl;
+        return 1;
+    }
 
-		    }
-		    if(!found){
-					cout<<"No history found"<<endl;
-				}else{
-					cout<<"\n+-----------------------------------------------+"<<endl;
-			cout<<"Total Claim (Expected) : RM"<<expected<<endl;
-			cout<<"Total Claim Approved   : RM"<<total<<endl;
-			cout<<"+-----------------------------------------------+"<<endl;
-				}
-		    
-			
-			
-			cout<<"Press E To Back To Check Claiming Page : "<<endl;
-				cin>>choice;
-				if(choice== 'E' || choice == 'e')
-				{
-					check_claiming_history(id);
-				}
-		
-		    check.close();
-		}
-		
-		void check_papermarking(string id)
-		{
-			float km=0,rm=0,total=0,expected=0;
-		bool found = false;
-			system("cls");
-			ifstream check("papermark.txt");
-			ifstream ulo("user_login.txt");
-			ofstream wid("papermark.txt",ios::app);
-			if(!check)
-		    {
-		        cout<<"File does not exist"<<endl;
-		        exit(0);
-		    }
-			string line,status;
-	    	while (getline(check, line))
-			{
-		        istringstream iss(line);
-		        getline(iss, c.claimID, '|');
-		        getline(iss, c.userID, '|');
-		        getline(iss, c.subject, '|');
-		        getline(iss, c.total, '|');
-		        stringstream ss(c.total);
-			    ss>>km;
-		        getline(iss, c.status, '|');
-		        if (c.status.empty())
-				{
-				    c.status = "PENDING";
-				}
-		        if(c.userID==id){
-		        	found=true;
-		        	cout<<"+-------------------------------------------------+"<<endl;
-					cout<<"\t\tPAPER MARKING CLAIM"<<endl;
-					cout<<"+-------------------------------------------------+"<<endl;
-					cout<<"SUBJECT                        : "<<c.subject<<endl;
-					cout<<"TOTAL NUMBER OF PAPER MARKING  : "<<c.total<<endl;
-					cout<<"STATUS                         : "<<c.status<<endl;
-					cout<<"+-------------------------------------------------+"<<endl;
-					if (c.status=="PENDING")
-			{
-				rm=km*0.60;
-				cout<<"Claim (Expected) : RM"<<rm<<endl;
-				expected+=rm;
-			}
-			if(c.status=="APPROVED")
-			{
-				rm=km*0.60;
-				cout<<"Claim            : RM"<<rm<<endl;
-				total+=rm;
-			}
-			else if(c.status=="REJECTED")
-			{
-				rm=0.00;
-				cout<<"Claim            : RM"<<rm<<endl;
-			}
-				}
-		       }
-		     	
-		 	if(!found){
-					cout<<"No history found"<<endl;
-				}else{
-					cout<<"\n+-----------------------------------------------+"<<endl;
-			cout<<"Total Claim (Expected) : RM"<<expected<<endl;
-			cout<<"Total Claim Approved   : RM"<<total<<endl;
-			cout<<"+-----------------------------------------------+"<<endl;
-				}
-		    
-		    
-			
-			
-		    cout<<"Press E To Back To Check Claiming Page : "<<endl;
-				cin>>choice;
-				if(choice== 'E' || choice == 'e')
-				{
-					check_claiming_history(id);
-				}
-		    check.close();
-		}
+    Claim* claims =  NULL;
+    int size = 0;
+
+    string line;
+    
+    string choice;
+    cout<<"\t+-------Type of Claim-------+"<<endl;
+    cout<<" "<<endl;
+    while(getline(inFile, line))
+    {
+        int b=0;
+        istringstream iss(line);
+
+        Claim claim;
+        getline(iss, claim.categoryID, '|');
+        getline(iss, claim.name, '|');
+        cout<<"\t    ["<<claim.categoryID<<"]"<<claim.name<<" "<<endl;
+    }
+    inFile.close();
+    cout<<" "<<endl;
+    cout<<"\t+---------------------------+"<<endl;
+    cout << "Enter the category you want to search for: ";
+    cin >> choice;
+
+    string searchCategory;
+    ifstream categoryFile("claim.txt");
+    if(!categoryFile)
+    {
+    	cout<<"Unable to open file"<<endl;
+    	return 1;
+	}
+	
+	while (getline(categoryFile, line)) 
+	{
+        istringstream iss(line);
+
+        string categoryID;
+        string claim_name;
+
+        getline(iss, categoryID, '|');  // Read categoryID
+        getline(iss, claim_name, '|');  // Read claim_name
+
+        if (categoryID == choice) {
+            searchCategory = claim_name;
+            break;
+        }
+        
+    }
+    
+    char sortOption;
+    cout << "Do you want to sort the data by category? (y/n): ";
+    cin >> sortOption;
+
+    int sortBy = 1; // Default: sort by ID
+    if (sortOption == 'y' || sortOption == 'Y') {
+        sortBy = 2; // Sort by category
+    }
+
+    mergeSort(claims, 0, size - 1, sortBy);
+
+    if (sortBy == 2) {
+        cout << "Sorted claims by category for ID 00001:\n" << endl;
+    } else {
+        cout << "Original claims data sorted by ID for ID 00001:\n" << endl;
+    }
+    
+    displayClaims(claims, size);
+
+    
+
+    while (getline(infile, line)) {
+        stringstream ss(line);
+        Claim claim;
+        getline(ss, claim.id, '|');
+        getline(ss, claim.type, '|');
+        getline(ss, claim.from, '|');
+        getline(ss, claim.to, '|');
+        getline(ss, claim.total_distance, '|');
+        getline(ss, claim.claim_money, '|');
+        
+        if (claim.id == "00001") {
+            // Allocate memory for claims dynamically
+            if (claims == NULL) {
+                claims = new Claim[1];
+            } else {
+                Claim* temp = new Claim[size + 1];
+                for (int i = 0; i < size; ++i) {
+                    temp[i] = claims[i];
+                }
+                delete[] claims;
+                claims = temp;
+            }
+            
+            claims[size++] = claim;
+        }
+    }
+    infile.close();
+
+    if (size == 0) {
+        cout << "No claims found with ID 00001." << endl;
+        return 0;
+    }
+
+    
+
+    int foundIndex = binarySearch(claims, size, searchCategory);
+
+    if (foundIndex != -1) {
+        cout << "\nFound matching claim:" << endl;
+        const Claim& foundClaim = claims[foundIndex];
+        cout << foundClaim.id << "|" << foundClaim.type << "|" << foundClaim.from << "|" << foundClaim.to
+             << "|" << foundClaim.total_distance << "|" << foundClaim.claim_money << "|" << endl;
+    } else {
+        cout << "No matching claim found for category '" << searchCategory << "'." << endl;
+    }
+
+    delete[] claims; // Clean up allocated memory
+    return 0;
 			
 };
 
@@ -1256,47 +1164,47 @@ void apply_claiming()
 	}
 }
 
-void ex(){
+void ex()
+{
 	User ue;
-					for(int g=0;g<10000;g++)
-					{
-						system("cls");
-						int dptc;
-						cout<<"*****************************************************"<<endl;
-						cout<<"\tWELCOME TO MMU-TTWC E-CLAIMING SYSTEM"<<endl;
-						cout<<"*****************************************************"<<endl;
+	for(int g=0;g<10000;g++)
+	{
+		system("cls");
+		int dptc;
+		cout<<"*****************************************************"<<endl;
+		cout<<"\tWELCOME TO MMU-TTWC E-CLAIMING SYSTEM"<<endl;
+		cout<<"*****************************************************"<<endl;
 							
-						cout<<"\t+-------- Make a Choice --------+"<<endl;
-						cout<<"\t|                               |"<<endl;
-						cout<<"\t|    [1] Register               |"<<endl;
-						cout<<"\t|    [2] Log In                 |"<<endl;
-						cout<<"\t|    [3] Exit                   |"<<endl;
-						cout<<"\t|                               |"<<endl;
-						cout<<"\t+-------------------------------+"<<endl;
-						cout<<"\tEnter Your Choice : ";
-						cin>>dptc;
+		cout<<"\t+-------- Make a Choice --------+"<<endl;
+		cout<<"\t|                               |"<<endl;
+		cout<<"\t|    [1] Register               |"<<endl;
+		cout<<"\t|    [2] Log In                 |"<<endl;
+		cout<<"\t|    [3] Exit                   |"<<endl;
+		cout<<"\t|                               |"<<endl;
+		cout<<"\t+-------------------------------+"<<endl;
+		cout<<"\tEnter Your Choice : ";
+		cin>>dptc;
 					
 						
-						if(dptc==1)
-						{
-							ue.registration();
-						}
-						else if(dptc==2)
-						{
-							ue.login();
-						}
-						else if(dptc==3)
-						{
-							cout<<"\tExiting in progress...";
-							exit(0);
-						}
-						else 
-						{
-							cout<<"\n\tInvalid choice entered!\n\tPlease try again.  ";
-							system("pause");
+		if(dptc==1)
+		{
+			ue.registration();
+		}
+		else if(dptc==2)
+		{
+			ue.login();
+		}
+		else if(dptc==3)
+		{
+			cout<<"\tExiting in progress...";
+			exit(0);
+		}
+		else 
+		{
+			cout<<"\n\tInvalid choice entered!\n\tPlease try again.  ";
+			system("pause");
 							
-							continue;
-					}
-					
-				}
+			continue;
+		}
+	}
 }
