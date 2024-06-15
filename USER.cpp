@@ -729,42 +729,34 @@ class User
 
 class claiming: public User
 {
-	const string customerID = "00001";
-    string line;
+	public:
+    const string customerID = "00001";
     string categoryID_input;
 
-    // Open the claim.txt file
-    ifstream inFiles("claim.txt");
+    void processClaim() {
+        ifstream inFiles("claim.txt");
 
-    if (!inFiles) {
-        cerr << "Unable to open file claim.txt" << endl;
-        return 1;
-    }
+        if (!inFiles) {
+            cerr << "Unable to open file claim.txt" << endl;
+            return;
+        }
 
-    // Read file content and display claim item options line by line
-    cout<<"\t+-------- Make a Choice --------+"<<endl;
-	cout<<"\t                               "<<endl;
-    while (getline(inFiles, line)) 
-	{
-        istringstream iss(line);
+        string line;
+        while (getline(inFiles, line)) {
+            istringstream iss(line);
+            string categoryID;
+            string claim_name;
 
-        string categoryID;
-        string claim_name;
+            getline(iss, categoryID, '|');
+            getline(iss, claim_name, '|');
 
-        getline(iss, categoryID, '|');  // Read categoryID
-        getline(iss, claim_name, '|');  // Read claim_name
+            cout << "[" << categoryID << "] " << claim_name << endl;
+        }
 
-		cout<<"\t    ["<<categoryID<<"] "<<claim_name<<"       "<<endl;
-		        
-    }
-		
-    // Close claim.txt file
-    inFiles.close();
-    cout<<""<<endl;
-	cout<<"\t+-------------------------------+"<<endl;
-	cout<<"\tEnter Your Choice : ";
-    // Get customer's selected claim item
-    getline(cin, categoryID_input);  // Use getline to get the entire line input
+        inFiles.close();
+
+        cout << "Enter Your Choice: ";
+        getline(cin, categoryID_input);
 
     // Find the category name
     string selectedCategoryName;
@@ -888,7 +880,7 @@ class claiming: public User
     friend class check; 
 };
 
-class check:public claiming
+class check
 {
 	ifstream inFile("claim.txt");
     ifstream infile("claim_request.txt");
