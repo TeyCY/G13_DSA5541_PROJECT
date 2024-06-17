@@ -18,7 +18,9 @@ int admin_login(){
 	admin_queue q;
 	string username,password;
 	cout<<"Username :";
+	cin.ignore();
 	getline(cin,username);
+	
 	cout<<"Password :";
 	getline(cin,password);
 	checkadminlogin(q);
@@ -94,7 +96,7 @@ void admin_function(){
 
 
 
-int main(){
+int main1(){
 	int check;
 	
 	do{
