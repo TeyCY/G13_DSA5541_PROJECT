@@ -17,6 +17,8 @@ struct node {
     node* next;
 };
 
+
+
 class admin_queue {
     private:
         node *front, *rear;
@@ -86,27 +88,10 @@ class admin_queue {
         }
 };
 
-//void writeDataToFile() {
-    //ofstream writefile("staff_info.txt", ios::app);
-    //if (!writefile) {
-      //  cout << "Unable to open file for writing" << endl;
-       // return;
-    //}
 
-   // if (writefile.is_open()) {
-       // writefile << "1|wong jia rong|active|" << endl;
-       // writefile << "2|john doe|inactive|" << endl;
-       // writefile << "3|jane smith|active|" << endl;
-       // writefile.close();
-    //} else {
-        //cerr << "Error: Unable to open staff_info.txt for writing.\n";
-   // }
-
-   // writefile.close();
-//}
 
 void checkadminlogin(admin_queue& q) {
-    ifstream readfile("staff_info.txt");
+    ifstream readfile("admin_login.txt");
     if (!readfile) {
         cerr << "Unable to open file for reading" << endl;
         return;
@@ -125,6 +110,8 @@ void checkadminlogin(admin_queue& q) {
 	
     readfile.close();
 }
+
+////////////////////////////////////////////////////////
 
 
 
