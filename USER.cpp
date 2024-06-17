@@ -17,6 +17,10 @@ void ex();
 struct ClaimDetail 
 {
     string categoryID;
+    string st;
+    string type;
+    string t;
+    string u;
     string v;
     string w;
     string x;
@@ -25,7 +29,12 @@ struct ClaimDetail
 };
 
 // Struct to store additional user input data
-struct InsertData {
+struct InsertData 
+{
+	string st;
+	string type;
+	string t;
+	string u;
     string v;
 	string w;
     string x;
@@ -33,16 +42,20 @@ struct InsertData {
     string z;
 };
 
-struct Claim {
-	string name;
-	string categoryID;
+struct Claim 
+{
     string id;
+    string categoryID;
     string type;
+    string date;
     string from;
     string to;
     string total_distance;
-    string claim_money;
-    string date;
+    string total_claim;
+    string status;
+    string start;
+    string end;
+    string rid;
 };
 
 void trim(string &str) 
@@ -56,12 +69,6 @@ struct userlogin
 	string username;
 	string password;
 	string userID;
-};
-
-struct claims
-{
-	string claimID,userID,start_time,end_time,total,departure,destination,expenses,date,address,days,paper,subject,status;
-	
 };
 
 class Person 
@@ -216,7 +223,7 @@ bool isValidPostcode(const string& postcode)
 	        return false;
 	    }
 	}
-  // If passed all checks, postcode is valid
+  	// If passed all checks, postcode is valid
     return true;
 }
 
@@ -258,35 +265,8 @@ bool isValidph(const string& contactNumber)
 	        return false;
 	    }
 	}
-  // If passed all checks, phone number is valid
+  	// If passed all checks, phone number is valid
     return true;
-}
-
-void readDetailedClaims(Claim*& claims, int& size) 
-{
-    ifstream detailFile("claim_detail.txt");
-    if (!detailFile) {
-        cerr << "Unable to open file claim_detail.txt" << endl;
-        return;
-    }
-
-    string line;
-    int index = 0;
-    while (getline(detailFile, line)) {
-        stringstream ss(line);
-        Claim claim;
-        getline(ss, claim.id, '|');
-        getline(ss, claim.date, '|');
-        getline(ss, claim.from, '|');
-        getline(ss, claim.to, '|');
-        getline(ss, claim.total_distance, '|');
-        getline(ss, claim.claim_money, '|');
-        
-        claims[index++] = claim;
-        size++;
-    }
-
-    detailFile.close();
 }
 
 void merge(Claim* claims, int left, int mid, int right, int sortBy) 
@@ -340,10 +320,10 @@ void merge(Claim* claims, int left, int mid, int right, int sortBy)
     delete[] R;
 }
 
-
 void mergeSort(Claim* claims, int left, int right, int sortBy) 
 {
-    if (left < right) {
+    if (left < right) 
+	{
         int mid = left + (right - left) / 2;
 
         mergeSort(claims, left, mid, sortBy);
@@ -355,31 +335,103 @@ void mergeSort(Claim* claims, int left, int right, int sortBy)
 
 void displayClaims(const Claim* claims, int size) 
 {
-    for (int i = 0; i < size; ++i) {
-        const Claim& claim = claims[i];
-        cout << claim.id << "|" << claim.type << "|" << claim.from << "|" << claim.to
-             << "|" << claim.total_distance << "|" << claim.claim_money << "|" << endl;
-    }
+	string line;
+	ifstream detailFile("claim_detail.txt");
+        if (!detailFile) 
+		{
+            cerr << "Unable to open file claim_detail.txt" << endl;
+            return;
+        }
+
+        bool found = false;
+        ClaimDetail selectedClaim;
+
+        while (getline(detailFile, line))
+		{
+		    istringstream iss(line);
+		    string categoryID, date, from, to, total_distance, total_claim, status, st, start, end;
+		
+		    getline(iss, categoryID, '|');
+		    getline(iss, date, '|');
+		    getline(iss, from, '|');
+		    getline(iss, to, '|');
+		    getline(iss, start, '|');
+		    getline(iss, end, '|');
+		    getline(iss, total_distance, '|');
+		    getline(iss, total_claim, '|');
+		
+		    // Assigning values to selectedClaim
+		    selectedClaim.categoryID = categoryID;
+		    selectedClaim.t = date;
+		    selectedClaim.u = from;
+		    selectedClaim.v = to;
+		    selectedClaim.w = start;
+		    selectedClaim.x = end;
+		    selectedClaim.y = total_distance;
+		    selectedClaim.z = total_claim;
+		}
+
+        detailFile.close();
+        
+	    for (int i = 0; i < size; ++i) 
+		{
+	    	cout<<endl;
+	        const Claim& claim = claims[i];
+	        cout << "RID : " << claim.rid<<endl;
+			cout << "Claim Type : " << claim.type <<endl;
+			cout << "Status     : " <<claim.status <<endl;
+			cout << selectedClaim.t << " : " <<claim.date <<endl;
+			cout << selectedClaim.u << " : " <<claim.from <<endl; 
+			cout << selectedClaim.v << " : " <<claim.to <<endl;
+			cout << selectedClaim.w << " : " <<claim.start <<endl;
+			cout << selectedClaim.x << " : " <<claim.end <<endl;
+			cout << selectedClaim.y << " : " <<claim.total_distance <<endl;
+			cout << selectedClaim.z << " : " <<claim.total_claim <<endl; 
+		}
 }
 
-
-int binarySearch(const Claim* claims, int size, const string& searchCategory) {
-    int left = 0;
-    int right = size - 1;
-
-    while (left <= right) {
-        int mid = left + (right - left) / 2;
-
-        if (claims[mid].type == searchCategory) {
-            return mid; // Found the category
-        } else if (claims[mid].type < searchCategory) {
-            left = mid + 1; // Search in the right half
-        } else {
-            right = mid - 1; // Search in the left half
-        }
+int binarySearch(Claim claims[], int low, int high, string categoryToSearch) 
+{
+    while (low <= high) 
+	{
+        int mid = low + (high - low) / 2;
+        
+        // Compare categoryToSearch with the category of the claim at mid
+        if (claims[mid].rid == categoryToSearch)
+            return mid;  // Found the category, return index
+        else if (claims[mid].rid < categoryToSearch)
+            low = mid + 1;  // Category might be in the upper half
+        else
+            high = mid - 1; // Category might be in the lower half
     }
+    return -1;  // Category not found
+}
 
-    return -1; // Category not found
+int rid_auto_increment() 
+{
+    ifstream readfile("claim_request.txt");
+    int max = 0, check;
+    if (!readfile) 
+	{
+        cout << "Unable to open file for reading" << endl;
+    }
+    string line;
+    while (getline(readfile, line)) 
+	{
+        istringstream iss(line);
+        string rid_str;
+        getline(iss, rid_str, '|');
+        stringstream ss(rid_str);
+        ss >> check;
+        if (check > max) 
+		{
+            max = check;
+        }
+        // Assuming the rest of the line is not relevant for `rid` auto-increment
+    }
+    max++;
+    readfile.close();
+    return max;
 }
 
 class User 
@@ -387,7 +439,7 @@ class User
 	private:
 	    string userID, name, ic, gender, contactNumber, email, caddress, paddress, state, city, poscode, username, password;
 	    char choice;
-	    int uID=1;
+	    int uID;
 	    ADTqueue ADT;
 	
 	public:
@@ -401,10 +453,11 @@ class User
             ofstream user_profile;
             user_profile.open("User_Profile.txt", ios::app);
 
-            if (u_profile.is_open()) {
+            if (u_profile.is_open()) 
+			{
                 string line;
                 while (getline(u_profile, line)) {
-                    uID++;
+                    uID=uID;
                 }
                 u_profile.close();
             }
@@ -418,7 +471,8 @@ class User
             getline(cin, name);
             cout << "IC Number            : ";
             getline(cin, ic);
-            while (!isValidIC(ic)) {
+            while (!isValidIC(ic)) 
+			{
                 cout << "Invalid IC format. Please enter a valid 12-digit IC£¡" << endl;
                 cout << "IC Number            : ";
                 getline(cin, ic);
@@ -448,14 +502,15 @@ class User
             }
 
             if (user_profile.is_open()) {
-                user_profile << setw(5) << setfill('0') << uID << "|" << name << "|" << ic << "|" << gender << "|" << contactNumber << "|" << email << "|" << caddress << "|" << paddress << "|" << state << "|" << city << "|" << poscode << "|" << endl;
+                user_profile << uID << "|" << name << "|" << ic << "|" << gender << "|" << contactNumber << "|" << email << "|" << caddress << "|" << paddress << "|" << state << "|" << city << "|" << poscode << "|" << endl;
                 user_profile.close();
             }
             // Assuming index() function is defined elsewhere
-            // index(userID);
+            index(userID);
         }
 
-        void promtprofile(string id) {
+        void promtprofile(string id) 
+		{
             system("cls");
             ifstream inputFile;
             inputFile.open("User_Profile.txt");
@@ -475,7 +530,8 @@ class User
                 getline(iss, city, '|');
                 getline(iss, poscode, '|');
 
-                if (userID == id) {
+                if (id == userID) 
+				{
                     cout << "+------------------------------------------------+" << endl;
                     cout << "Name              : " << name << endl;
                     cout << "IC                : " << ic << endl;
@@ -504,6 +560,7 @@ class User
                     cin >> choice;
                 }
             } while (choice != 'E' && choice != 'e');
+            system("cls");
         }
 
         void registration() {
@@ -531,7 +588,7 @@ class User
             string unm;
             string psswd;
             string psswd2;
-            char save[2];
+			char save[2];
 
             ifstream u_login("user_login.txt");
             ofstream user_login;
@@ -541,7 +598,7 @@ class User
                 uID++;
             }
 
-            cout << "User ID: " << setw(5) << setfill('0') << uID << endl;
+            cout << "User ID: "  << uID << endl;
 
             fflush(stdin);
             cout << "Username (at most 8 characters) : ";
@@ -586,7 +643,7 @@ class User
                     cout << "File doesn't exist";
                     exit(0);
                 }
-                user_login << setw(5) << setfill('0') << uID;
+                user_login << uID;
                 user_login << "|" << unm << "|" << psswd << "|" << endl;
                 user_login.close();
                 cout << "\n>Your account is created successfully! Try to login now!" << "\n";
@@ -596,74 +653,76 @@ class User
         }
 	
 	    void login() 
-	{
-	    string lgn;
-	    string passwd;
-	    string getup;
-	    char ch, ch1;
-	    string choice1;
-	    ADT.loadFromFile();
-	
-	    for (int z = 0; z < 3; z++) 
-	    {
-	        system("cls");
-	        cout << "****************************************" << endl;
-	        cout << "\tLogin with your account!" << endl;
-	        cout << "****************************************";
-	        cout << endl;
-	        cout << "Exit [Type E]" << "\n\n";
-	        lgn = "";
-	        passwd = "";
-	        fflush(stdin);
-	        cout << "Username : ";
-	        getline(cin, lgn);
-	        if (lgn == "E" || lgn == "e") 
-	        {
-	            return;
-	        } 
-	        else
-	        {
-	            cout << endl;
-	            fflush(stdin);
-	            cout << "Password : ";
-	            getline(cin, passwd);
-	            string userID;
-	            if (ADT.login(lgn, passwd, userID))
-	            {
-	                system("cls");
-	                cout << "Login Successfully!" << endl << endl;
-	                cout << "Debug: UserID after login: " << userID << endl; // Debug statement
-	
-	                if (isProfileFilled(userID)) 
-	                {
-	                    index(userID);
-	                } 
-	                else 
-	                {
-	                    cout << "You haven't filled in your personal information yet. Please fill in your profile." << endl;
-	                    user_profile();
-	                }
-	                return;
-	            }
-	            else
-	            {
-	                cout << endl << "Invalid Username or Password Entered! \nPlease try again.";
-	                system("pause");
-	                return login();
-	            }   
-	        }
-	    }
-}
+		{
+		    string lgn;
+		    string passwd;
+		    string getup;
+		    char ch, ch1;
+		    string choice1;
+		    ADT.loadFromFile();
+		
+		    for (int z = 0; z < 3; z++) 
+		    {
+		        system("cls");
+		        cout << "****************************************" << endl;
+		        cout << "\tLogin with your account!" << endl;
+		        cout << "****************************************";
+		        cout << endl;
+		        cout << "Exit [Type E]" << "\n\n";
+		        lgn = "";
+		        passwd = "";
+		        fflush(stdin);
+		        cout << "Username : ";
+		        getline(cin, lgn);
+		        if (lgn == "E" || lgn == "e") 
+		        {
+		            return;
+		        } 
+		        else
+		        {
+		            cout << endl;
+		            fflush(stdin);
+		            cout << "Password : ";
+		            getline(cin, passwd);
+		            string userID;
+		            if (ADT.login(lgn, passwd, userID))
+		            {
+		                system("cls");
+		                cout << "Login Successfully!" << endl << endl;
+		                cout << "Debug: UserID after login: " << userID << endl; // Debug statement
+		
+		                if (isProfileFilled(userID)) 
+		                {
+		                    index(userID);
+		                } 
+		                else 
+		                {
+		                    cout << "You haven't filled in your personal information yet. Please fill in your profile." << endl;
+		                    user_profile();
+		                }
+		                return;
+		            }
+		            else
+		            {
+		                cout << endl << "Invalid Username or Password Entered! \nPlease try again.";
+		                system("pause");
+		                return login();
+		            }   
+		        }
+	    	}
+		}
 	    
 		
 	    bool isProfileFilled(string& ID)
 		{
 	        ifstream inputFile("User_Profile.txt");
 	        string line;
-	        while (getline(inputFile, line)) {
+	        while (getline(inputFile, line)) 
+			{
 	            istringstream iss(line);
 	            getline(iss, userID, '|');
-	            if (userID == ID) {
+	            if (userID == ID) 
+				{
 	                return true;
 	            }
 	        }
@@ -704,252 +763,297 @@ class User
 		}    
 };
 
-class claiming : public User {
-public:
-    string categoryID_input;
+class claiming : public User 
+{
+	public:
+	    string categoryID_input;
+	
+	    void processClaim(string userID) 
+		{
+	        system("cls");
+	
+	        ifstream inFiles("claim.txt");
+	        if (!inFiles) 
+			{
+	            cout << "Unable to open file claim.txt" << endl;
+	            return;
+	        }
+	
+	        string line;
+	        cout << "\t+-------Type of Claim-------+" << endl;
+	        cout << " " << endl;
+	        while (getline(inFiles, line)) 
+			{
+	            istringstream iss(line);
+	            string categoryID, claim_name;
+	
+	            getline(iss, categoryID, '|');
+	            getline(iss, claim_name, '|');
+	
+	            cout << "\t    [" << categoryID << "] " << claim_name << endl;
+	        }
+	
+	        inFiles.close();
+	        cout << " " << endl;
+	        cout << "\t+---------------------------+" << endl;    
+	        cout << "\t    Enter Your Choice: ";
+	        getline(cin >> ws, categoryID_input);
+	
+	        // Debug statement to check input
+	        cout << "Category ID Input: " << categoryID_input << endl;
+	
+	        // Find the category name
+	        string selectedCategoryName;
+	        ifstream categoryFile("claim.txt");
+	        if (!categoryFile) 
+			{
+	            cout << "Unable to open file claim.txt" << endl;
+	            return;
+	        }
+	
+	        bool categoryFound = false;
+	        while (getline(categoryFile, line)) 
+			{
+	            istringstream iss(line);
+	            string categoryID, claim_name;
+	
+	            getline(iss, categoryID, '|');
+	            getline(iss, claim_name, '|');
+	
+	            if (categoryID == categoryID_input) 
+				{
+	                selectedCategoryName = claim_name;
+	                categoryFound = true;
+	                break;
+	            }
+	        }
+	
+	        categoryFile.close();
+	
+	        if (!categoryFound) 
+			{
+	            cout << "Category ID not found in claim.txt" << endl;
+	            return;
+	        }
+	
+	        // Open claim_detail.txt file and find the matching claim item details
+	    
+			ifstream detailFile("claim_detail.txt");
+	        if (!detailFile) 
+			{
+	            cerr << "Unable to open file claim_detail.txt" << endl;
+	            return;
+	        }
+	
+	        bool found = false;
+	        ClaimDetail selectedClaim;
+	
+	        while (getline(detailFile, line))
+			{
+			    istringstream iss(line);
+			    string categoryID, date, from, to, total_distance, total_claim, status, st, start, end;
+			
+			    getline(iss, categoryID, '|');
+			    getline(iss, date, '|');
+			    getline(iss, from, '|');
+			    getline(iss, to, '|');
+			    getline(iss, start, '|');
+			    getline(iss, end, '|');
+			    getline(iss, total_distance, '|');
+			    getline(iss, total_claim, '|');
+			
+			    // Assigning values to selectedClaim
+			    selectedClaim.categoryID = categoryID;
+			    selectedClaim.t = date;
+			    selectedClaim.u = from;
+			    selectedClaim.v = to;
+			    selectedClaim.w = start;
+			    selectedClaim.x = end;
+			    selectedClaim.y = total_distance;
+			    selectedClaim.z = total_claim;
+			}
 
-    void processClaim(string userID) {
-        ifstream inFiles("claim.txt");
-        if (!inFiles) {
-            cerr << "Unable to open file claim.txt" << endl;
-            return;
-        }
-
-        string line;
-        while (getline(inFiles, line)) {
-            istringstream iss(line);
-            string categoryID, claim_name;
-
-            getline(iss, categoryID, '|');
-            getline(iss, claim_name, '|');
-
-            cout << "[" << categoryID << "] " << claim_name << endl;
-        }
-
-        inFiles.close();
-
-        cout << "Enter Your Choice: ";
-        getline(cin >> ws, categoryID_input);
-
-        // Find the category name
-        string selectedCategoryName;
-        ifstream categoryFile("claim.txt");
-        if (!categoryFile) {
-            cerr << "Unable to open file claim.txt" << endl;
-            return;
-        }
-
-        while (getline(categoryFile, line)) {
-            istringstream iss(line);
-            string categoryID, claim_name;
-
-            getline(iss, categoryID, '|');
-            getline(iss, claim_name, '|');
-
-            if (categoryID == categoryID_input) {
-                selectedCategoryName = claim_name;
-                break;
-            }
-        }
-
-        categoryFile.close();
-
-        // Open claim_detail.txt file and find the matching claim item details
-        ifstream detailFile("claim_detail.txt");
-        if (!detailFile) {
-            cerr << "Unable to open file claim_detail.txt" << endl;
-            return;
-        }
-
-        bool found = false;
-        ClaimDetail selectedClaim;
-
-        while (getline(detailFile, line)) {
-            istringstream iss(line);
-            string tempCategoryID, date, from, to, total_distance, claim_money;
-
-            getline(iss, tempCategoryID, '|');
-            getline(iss, date, '|');
-            getline(iss, from, '|');
-            getline(iss, to, '|');
-            getline(iss, total_distance, '|');
-            getline(iss, claim_money, '|');
-
-            if (tempCategoryID == categoryID_input) {
-                found = true;
-                selectedClaim.categoryID = tempCategoryID;
-                selectedClaim.v = date;
-                selectedClaim.w = from;
-                selectedClaim.x = to;
-                selectedClaim.y = total_distance;
-                selectedClaim.z = claim_money;
-                break;
-            }
-        }
-
-        detailFile.close();
-
-        if (found) {
-            system("cls");
-            InsertData userInsertData;
-
-            cout << selectedClaim.v << ": ";
-            getline(cin >> ws, userInsertData.v);
-            cout << selectedClaim.w << ": ";
-            getline(cin, userInsertData.w);
-            cout << selectedClaim.x << ": ";
-            getline(cin, userInsertData.x);
-            cout << selectedClaim.y << ": ";
-            getline(cin, userInsertData.y);
-            cout << selectedClaim.z << ": ";
-            getline(cin, userInsertData.z);
-
-            cout << "\nInformation:" << endl;
-            cout << selectedClaim.v << ": " << userInsertData.v << endl;
-            cout << selectedClaim.w << ": " << userInsertData.w << endl;
-            cout << selectedClaim.x << ": " << userInsertData.x << endl;
-            cout << selectedClaim.y << ": " << userInsertData.y << endl;
-            cout << selectedClaim.z << ": " << userInsertData.z << endl;
-
-            ofstream outFile("claim_request.txt", ios::app);
-            if (!outFile) {
-                cerr << "Unable to open file claim_request.txt" << endl;
-                return;
-            }
-
-            outFile << "\n" << userID << "|" << selectedCategoryName << "|" << userInsertData.v << "|" << userInsertData.w << "|" << userInsertData.x << "|" << userInsertData.y << "|" << userInsertData.z << "|" << "PENDING" << "|";
-            outFile.close();
-
-            cout << "\nData has been successfully saved!!!" << endl;
-        } else {
-            cout << "No details found for the selected claim item." << endl;
-        }
-    }
-
-    friend class check;
+	        detailFile.close();
+			
+	        if (!found) 
+			{
+	            system("cls");
+	            InsertData userInsertData;
+	            int rid = rid_auto_increment();
+	            cout << "\t+---" << selectedCategoryName << "---+" << endl;
+	            cout << " " << endl;
+	            cout << "\t" << selectedClaim.t << ": ";
+	            getline(cin >> ws, userInsertData.t);
+	            cout << "\t" << selectedClaim.u << ": ";
+	            getline(cin >> ws, userInsertData.u);
+	            cout << "\t" << selectedClaim.v << ": ";
+	            getline(cin >> ws, userInsertData.v);
+	            cout << "\t" << selectedClaim.w << ": ";
+	            getline(cin, userInsertData.w);
+	            cout << "\t" << selectedClaim.x << ": ";
+	            getline(cin, userInsertData.x);
+	            cout << "\t" << selectedClaim.y << ": ";
+	            getline(cin, userInsertData.y);
+	            cout << "\t" << selectedClaim.z << ": ";
+	            getline(cin, userInsertData.z);
+	            cout << "\t+---------------------------+" << endl;
+	
+	            cout << "\nInformation:" << endl;
+	            cout << selectedClaim.t << ": " << userInsertData.t << endl;
+	            cout << selectedClaim.u << ": " << userInsertData.u << endl;
+	            cout << selectedClaim.v << ": " << userInsertData.v << endl;
+	            cout << selectedClaim.w << ": " << userInsertData.w << endl;
+	            cout << selectedClaim.x << ": " << userInsertData.x << endl;
+	            cout << selectedClaim.y << ": " << userInsertData.y << endl;
+	            cout << selectedClaim.z << ": " << userInsertData.z << endl;
+	            
+	            ofstream outFile("claim_request.txt", ios::app);
+	            if (!outFile) 
+				{
+	                cerr << "Unable to open file claim_request.txt" << endl;
+	                return;
+	            }
+	
+	            outFile << "\n" << rid << "|" << userID << "|" << selectedCategoryName << "|" << "PENDING" << "|" << userInsertData.t << "|" << userInsertData.u << "|" << userInsertData.v << "|" << userInsertData.w << "|" << userInsertData.x << "|" << userInsertData.y << "|" << userInsertData.z << "|";
+	            outFile.close();
+	
+	            cout << "\nData has been successfully saved!!!" << endl;
+	            
+	        } 
+			else 
+			{
+	            cout << "No details found for the selected claim item." << endl;
+	        }
+	        cout << "Press Enter" << endl;
+	        system("pause"); // Use system("pause") instead of system("cls") to wait for user input
+	        system("cls");
+	    }
+	
+	    friend class check;
 };
 
-class check {
-public:
-    void processCheck(string userID)
-	{
-        // File operations
-        ifstream inFile("claim.txt");
-        if (!inFile) {
-            cerr << "Failed to open file claim.txt." << endl;
-            return;
-        }
-
-        string line;
-        cout << "\t+-------Type of Claim-------+" << endl;
-        cout << " " << endl;
-        while (getline(inFile, line)) 
+class check : public User
+{
+	public:
+	    void processCheck(string userID) 
 		{
-            istringstream iss(line);
-            Claim claim;
-            getline(iss, claim.categoryID, '|');
-            getline(iss, claim.name, '|');
-            cout << "\t    [" << claim.categoryID << "] " << claim.name << " " << endl;
-        }
-        inFile.close();
-        cout << " " << endl;
-        cout << "\t+---------------------------+" << endl;
-
-        // User input
-        string choice;
-        cout << "Enter the category you want to search for: ";
-        cin >> choice;
-
-        // Search category
-        string searchCategory;
-        ifstream categoryFile("claim.txt");
-        if (!categoryFile) 
-		{
-            cerr << "Unable to open file claim.txt" << endl;
-            return;
-        }
-
-        while (getline(categoryFile, line)) 
-		{
-            istringstream iss(line);
-            string categoryID, claim_name;
-            getline(iss, categoryID, '|');
-            getline(iss, claim_name, '|');
-            if (categoryID == choice) {
-                searchCategory = claim_name;
-                break;
-            }
-        }
-        categoryFile.close();
-
-        // Sort option
-        char sortOption;
-        cout << "Do you want to sort the data by category? (y/n): ";
-        cin >> sortOption;
-
-        int sortBy = (sortOption == 'y' || sortOption == 'Y') ? 2 : 1;
-
-        // Read and process claims
-        ifstream infile("claim_request.txt");
-        if (!infile.is_open()) {
-            cerr << "Failed to open file claim_request.txt." << endl;
-            return;
-        }
-
-        Claim* claims = NULL;
-        int size = 0;
-
-        while (getline(infile, line)) {
-            stringstream ss(line);
-            Claim claim;
-            getline(ss, claim.id, '|');
-            getline(ss, claim.categoryID, '|');
-            getline(ss, claim.from, '|');
-            getline(ss, claim.to, '|');
-            getline(ss, claim.total_distance, '|');
-            getline(ss, claim.claim_money, '|');
-
-            if (claim.id == "00001") {
-                // Allocate memory for claims dynamically
-                Claim* temp = new Claim[size + 1];
-                for (int i = 0; i < size; ++i) {
-                    temp[i] = claims[i];
-                }
-                delete[] claims;
-                claims = temp;
-                claims[size++] = claim;
-            }
-        }
-        infile.close();
-
-        if (size == 0) {
-            cout << "No claims found with ID 00001." << endl;
-            return;
-        }
-
-        mergeSort(claims, 0, size - 1, sortBy);
-
-        if (sortBy == 2) {
-            cout << "Sorted claims by category for ID 00001:\n" << endl;
-        } else {
-            cout << "Original claims data sorted by ID for ID 00001:\n" << endl;
-        }
-
-        displayClaims(claims, size);
-
-        int foundIndex = binarySearch(claims, size, searchCategory);
-
-        if (foundIndex != -1) {
-            cout << "\nFound matching claim:" << endl;
-            const Claim& foundClaim = claims[foundIndex];
-            cout << foundClaim.id << "|" << foundClaim.categoryID << "|" << foundClaim.from << "|" << foundClaim.to
-                 << "|" << foundClaim.total_distance << "|" << foundClaim.claim_money << "|" << endl;
-        } else {
-            cout << "No matching claim found for category '" << searchCategory << "'." << endl;
-        }
-
-        delete[] claims; // Clean up allocated memory
+	        system("cls"); // Clear screen
+	
+	        const int MAX_CLAIMS = 100;  // Maximum number of claims to handle
+	        Claim claims[MAX_CLAIMS];    // Array to store claims
+	        int count = 0;               // Counter for number of claims found
+	 
+	        // Read claims from file
+	        ifstream inFile("claim_request.txt");
+			if (!inFile) 
+			{
+			    cerr << "Failed to open file claim_request.txt." << endl;
+			    return;
+			}
+			
+			string line;
+			while (getline(inFile, line) && count < MAX_CLAIMS) 
+			{
+			    stringstream ss(line);
+			    string rid;
+			    getline(ss, claims[count].rid, '|');
+			    getline(ss, claims[count].id, '|');
+			    getline(ss, claims[count].type, '|');
+			    getline(ss, claims[count].status, '|');
+			    getline(ss, claims[count].date, '|');
+			    getline(ss, claims[count].from, '|');
+			    getline(ss, claims[count].to, '|');
+			    getline(ss, claims[count].start, '|');
+			    getline(ss, claims[count].end, '|');
+			    getline(ss, claims[count].total_distance, '|');
+			    getline(ss, claims[count].total_claim, '|');
+			
+			    if (claims[count].id == userID) 
+				{
+			        count++;  // Increment count only if the claim belongs to userID
+			    }
+			}
+			inFile.close();
+	
+	        if (count == 0) 
+			{
+	            cout << "No claims found for ID " << userID << "." << endl;
+	            return;
+	        }
+	
+	        // Ask user for sorting preference
+	        char sortOption;
+	        cout << "Do you want to sort the data by category? (y/n): ";
+	        cin >> sortOption;
+	
+	        int sortBy = (sortOption == 'y' || sortOption == 'Y') ? 2 : 1;
+	
+	        // Perform sorting using merge sort
+	        mergeSort(claims, 0, count - 1, sortBy);
+	
+	        // Display sorted claims
+	        if (sortBy == 2) 
+			{
+	            cout << "Sorted claims by category for ID " << userID << ":\n" << endl;
+	        } 
+			else 
+			{
+	            cout << "Original claims data sorted by ID for ID " << userID << ":\n" << endl;
+	        }
+	        displayClaims(claims, count);
+			
+			
+    		// Ask user for category to search
+			ifstream file("claim_request.txt");
+    if (!file) {
+        cout << "Failed to open file claim_request.txt." << endl;
+        
     }
+
+    // Read data from file into claims array
+    while (getline(file, line) && count < MAX_CLAIMS) {
+        stringstream ss(line);
+        getline(ss, claims[count].rid, '|');
+        getline(ss, claims[count].id, '|');
+        getline(ss, claims[count].type, '|');
+        getline(ss, claims[count].status, '|');
+        getline(ss, claims[count].date, '|');
+        getline(ss, claims[count].from, '|');
+        getline(ss, claims[count].to, '|');
+        getline(ss, claims[count].start, '|');
+        getline(ss, claims[count].end, '|');
+        getline(ss, claims[count].total_distance, '|');
+        getline(ss, claims[count].total_claim, '|');
+
+        // Increment count only if the claim belongs to userID
+        if (claims[count].id == userID) {
+            count++;
+        }
+    }
+    file.close();  // Close the file after reading
+
+    // Prompt user for category to search
+    string categoryToSearch;
+    cout << "Enter the category to search (using RID): ";
+    cin >> categoryToSearch;
+
+    // Perform binary search on claims array
+    int categoryIndex = binarySearch(claims, 0, count - 1, categoryToSearch);
+
+    // Display results based on binary search
+    if (categoryIndex != -1) {
+        cout << "\nClaims with category " << categoryToSearch << ":\n";
+        displayClaims(claims + categoryIndex, 1); // Display only one claim starting from categoryIndex
+    } else {
+        cout << "\nNo claims found with category " << categoryToSearch << "." << endl;
+    }
+
+    // System-specific pause and clear screen commands
+    system("pause");  // Pause the console
+    system("cls");    // Clear the console screen
+
+	        
+	    }
 };
 
 void index(string id)
@@ -1007,59 +1111,6 @@ void index(string id)
 		ck.processCheck(id);	    	
 	}
 }
-}
-
-void check_claiming_history(string id)
-{
-	system("cls");
-	User u;
-	claiming la;
-	system("cls");
-	check c;
-	int choice;
-	string uid="";
-	cout<<"++++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl;
-	cout<<"\t\t\tCLAIM"<<endl;
-	cout<<"++++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl;
-	cout<<"1. Petrol Claim history "<<endl;
-	cout<<"2. Toll Claim history"<<endl;
-	cout<<"3. Overnight Stay Claim history"<<endl;
-	cout<<"4. Intruction Claim History"<<endl;
-	cout<<"5. Paper Marking Claim History"<<endl;
-	cout<<"++++++++++++++++++++++++++++++++++++++++++++++++++++"<<endl;
-	cout<<"Enter Your Choice [Press 6 back to main]: ";
-	cin>>choice;
-	while(choice<1||choice>6)
-	{
-		cout<<"Wrong Choice are selected! Please enter again your choice:";
-		cin>>choice;
-	}
-	cin.ignore();
-	
-	
-}
-	
-void apply_claiming()
-{
-	system("cls");
-	check c;
-	int choice,id;
-	string uid="";
-	cout<<"Please choose your claim"<<endl;
-	cout<<"1. Petrol Claim"<<endl;
-	cout<<"2. Toll claim"<<endl;
-	cout<<"3. Overnight stay claim"<<endl;
-	cout<<"4. Intruction claim"<<endl;
-	cout<<"5. Paper making claim"<<endl;
-	cout<<"++++++++++++++++++++++++++++++++++++++++++++++++"<<endl;
-	cout<<"Enter Your Choice [Press 6 back to main]: ";
-	cin>>choice;
-	while(choice<1||choice>6) {
-		cout<<"Wrong Choice are selected! Please enter again your choice:";
-		cin>>choice;
-	}
-	system("cls");
-	
 }
 
 void ex()

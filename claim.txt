@@ -1,3 +1,3 @@
-1|petrol claim|
-2|toll claim|
-3|stay claim|
+1|Petrol Claim|
+2|Toll Claim|
+3|Staycation Claim|
